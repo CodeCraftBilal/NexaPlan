@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Sparkles, LayoutDashboard, Zap } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function LandingPage() {
+  const { isAuthenticated } = useAuthStore();
+
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden">
       {/* Background decorations */}
@@ -16,12 +21,20 @@ export default function LandingPage() {
           <span className="text-xl font-bold tracking-tight">ProjectAI</span>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-            Sign In
-          </Link>
-          <Link href="/register" className="px-4 py-2 rounded-full bg-white text-black text-sm font-medium hover:bg-slate-200 transition-colors">
-            Get Started
-          </Link>
+          {isAuthenticated ? (
+            <Link href="/projects" className="px-4 py-2 rounded-full bg-white text-black text-sm font-medium hover:bg-slate-200 transition-colors">
+              Go to Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                Sign In
+              </Link>
+              <Link href="/register" className="px-4 py-2 rounded-full bg-white text-black text-sm font-medium hover:bg-slate-200 transition-colors">
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       </header>
 

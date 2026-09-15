@@ -6,11 +6,23 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { LayoutDashboard, FolderKanban, CheckSquare, Bell, Settings, LogOut, ChevronDown } from "lucide-react";
 import clsx from "clsx";
+import { api } from "@/lib/api";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      logout();
+      router.push("/");
+    }
+  };
 
   // Wait, for MVP we can skip strict client-side redirect if not authenticated 
   // since we don't have a real login API yet, but let's mock it.
@@ -60,7 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4 border-t border-white/5 space-y-2">
           <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 cursor-pointer text-slate-300">
             <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-medium text-white">
               {user?.name?.[0] || "U"}
@@ -70,6 +82,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <ChevronDown className="w-4 h-4 text-slate-500" />
           </div>
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            Sign Out
+          </button>
         </div>
       </aside>
 
