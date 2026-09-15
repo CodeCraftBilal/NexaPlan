@@ -42,8 +42,8 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Routes
-app.use("/api", (req: Request, res: Response) => {
-  return res.json({
+app.use("/api", (_req: Request, res: Response) => {
+  res.json({
     success: true,
     message: "AI Project Manager API is running",
   });
