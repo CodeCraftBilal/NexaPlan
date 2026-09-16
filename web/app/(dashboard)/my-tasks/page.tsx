@@ -1,84 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import { CheckSquare, Search, MoreHorizontal, Filter } from "lucide-react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowUpRight, CheckCheck, Circle, Search } from "lucide-react";
+import { api } from "@/lib/api";
+import { errorMessage, label } from "@/lib/project-data";
+import type { ApiResponse, Task, TaskStatus } from "@/lib/types";
+import { EmptyState, ErrorState, LoadingState, Stat, TaskRow } from "@/components/project-ui";
 
 export default function MyTasksPage() {
-  const [tasks] = useState([
-    { id: 1, title: "Review pull requests", project: "Web App Refactor", priority: "HIGH", status: "TODO", dueDate: "Today" },
-    { id: 2, title: "Design mobile app icon", project: "Mobile App MVP", priority: "MEDIUM", status: "IN_PROGRESS", dueDate: "Tomorrow" },
-    { id: 3, title: "Write API documentation", project: "Web App Refactor", priority: "LOW", status: "TODO", dueDate: "Next week" },
-    { id: 4, title: "Fix authentication bug", project: "Web App Refactor", priority: "URGENT", status: "TODO", dueDate: "Overdue" },
-  ]);
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">My Tasks</h1>
-          <p className="text-slate-400 mt-1">Work assigned to you across all projects</p>
-        </div>
-      </div>
-
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input 
-                type="text" 
-                placeholder="Search my tasks..." 
-                className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500 w-64"
-              />
-            </div>
-            <button className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-sm font-medium transition-colors">
-              <Filter className="w-4 h-4" />
-              Filter
-            </button>
-          </div>
-          <div className="text-sm font-medium text-slate-400">
-            {tasks.length} tasks
-          </div>
-        </div>
-
-        <div className="divide-y divide-white/5">
-          {tasks.map((task) => (
-            <div key={task.id} className="p-4 hover:bg-white/[0.02] transition-colors flex items-center gap-4 group cursor-pointer">
-              <div className="w-5 h-5 rounded border border-slate-500 flex-shrink-0 flex items-center justify-center group-hover:border-indigo-400 transition-colors">
-                <CheckSquare className="w-3.5 h-3.5 text-transparent group-hover:text-indigo-400/50" />
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-slate-200 truncate">{task.title}</h4>
-                <div className="text-xs text-slate-500 mt-1">{task.project}</div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
-                  task.priority === 'URGENT' ? 'bg-rose-500/20 text-rose-400' :
-                  task.priority === 'HIGH' ? 'bg-amber-500/20 text-amber-400' :
-                  task.priority === 'MEDIUM' ? 'bg-indigo-500/10 text-indigo-400' :
-                  'bg-slate-500/20 text-slate-300'
-                }`}>
-                  {task.priority}
-                </span>
-                
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                  task.dueDate === 'Overdue' ? 'text-rose-400 bg-rose-500/10' :
-                  task.dueDate === 'Today' ? 'text-amber-400 bg-amber-500/10' :
-                  'text-slate-400 bg-white/5'
-                }`}>
-                  {task.dueDate}
-                </span>
-
-                <button className="p-1.5 text-slate-500 hover:text-white hover:bg-white/10 rounded-md transition-colors">
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("OPEN");
+  const [priority, setPriority] = useState("ALL");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
+  useEffect(() => {
+    let active = true;
+    api.get<ApiResponse<Task[]>>("/tasks/mine").then((response) => { if (active) { setTasks(response.data.data); setError(""); } }).catch((error) => { if (active) setError(errorMessage(error, "We couldn't load your tasks.")); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [version]);
+  async function updateStatus(task: Task, status: TaskStatus) {
+    if (busy) return;
+    setBusy(task.id);
+    try { await api.patch(`/tasks/${task.id}/status`, { status }); setTasks((items) => items.map((item) => item.id === task.id ? { ...item, status } : item)); setError(""); } catch (error) { setError(errorMessage(error, "We couldn't update this task.")); } finally { setBusy(null); }
+  }
+  const completed = tasks.filter((task) => task.status === "COMPLETED").length;
+  const open = tasks.filter((task) => !["COMPLETED", "CANCELLED"].includes(task.status));
+  const filtered = tasks.filter((task) => `${task.title} ${task.project?.name || ""}`.toLowerCase().includes(query.toLowerCase()) && (priority === "ALL" || task.priority === priority) && (filter === "ALL" || (filter === "OPEN" ? !["COMPLETED", "CANCELLED"].includes(task.status) : task.status === "COMPLETED")));
+  return <div className="page-enter mx-auto max-w-7xl space-y-8"><div className="page-header"><div><p className="eyebrow mb-3">Find your focus</p><h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">My tasks<span className="text-primary">.</span></h1><p className="mt-3 text-sm text-[#93998d]">Your next steps, all in one place.</p></div><Link href="/projects" className="btn-secondary">Explore projects<ArrowUpRight size={15} /></Link></div>
+    {loading ? <LoadingState /> : <><div className="grid gap-4 sm:grid-cols-3"><Stat title="On your list" value={open.length} caption="Open tasks assigned to you" /><Stat title="In motion" value={tasks.filter((task) => task.status === "IN_PROGRESS").length} caption="Work you're moving forward" /><Stat title="Done and dusted" value={completed} caption="Small wins add up" /></div>{error && <ErrorState message={error} onRetry={() => { setLoading(true); setVersion((n) => n + 1); }} />}
+    <div className="panel overflow-hidden"><div className="flex flex-col justify-between gap-4 border-b border-border p-4 lg:flex-row"><div className="flex gap-1">{[{ id: "OPEN", name: "To do", icon: Circle }, { id: "COMPLETED", name: "Completed", icon: CheckCheck }, { id: "ALL", name: "All tasks", icon: Circle }].map((tab) => <button key={tab.id} onClick={() => setFilter(tab.id)} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ${filter === tab.id ? "bg-surface-hover text-primary" : "text-[#93998d] hover:text-foreground"}`}><tab.icon size={13} />{tab.name}</button>)}</div><div className="flex flex-wrap gap-3"><div className="relative"><Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#686e65]" /><input aria-label="Search my tasks" value={query} onChange={(e) => setQuery(e.target.value)} className="field w-full !py-2 !pl-9 text-xs" placeholder="Search tasks…" /></div><select aria-label="Filter by priority" value={priority} onChange={(e) => setPriority(e.target.value)} className="field !py-2 text-xs"><option value="ALL">All priorities</option>{["URGENT", "HIGH", "MEDIUM", "LOW"].map((value) => <option key={value} value={value}>{label(value)}</option>)}</select></div></div>{filtered.length ? filtered.map((task) => <TaskRow key={task.id} task={task} onStatus={updateStatus} busy={busy !== null} showProject />) : <div className="p-5"><EmptyState title={tasks.length ? "You're all clear here" : "Room for your next great idea"} description={tasks.length ? "No tasks match this view. Try another filter or enjoy a moment of clarity." : "Tasks assigned to you will appear here. Open a project to create and assign your first task."} action={!tasks.length && <Link href="/projects" className="btn-primary">View projects<ArrowUpRight size={15} /></Link>} /></div>}<div className="border-t border-border px-6 py-3 text-xs text-[#686e65]">{filtered.length} of {tasks.length} tasks</div></div></>}
+  </div>;
 }

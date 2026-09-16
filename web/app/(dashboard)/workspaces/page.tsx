@@ -1,80 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Plus, Users, LayoutDashboard, Settings } from "lucide-react";
+import { ArrowUpRight, Building2, FolderKanban, Loader2, Plus, Users, X } from "lucide-react";
 import { api } from "@/lib/api";
+import { fetchWorkspaces, errorMessage } from "@/lib/project-data";
+import type { ApiResponse, Workspace } from "@/lib/types";
+import { EmptyState, ErrorState, LoadingState } from "@/components/project-ui";
 
 export default function WorkspacesPage() {
-  const [workspaces, setWorkspaces] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [formError, setFormError] = useState("");
+  const [version, setVersion] = useState(0);
   useEffect(() => {
-    // We will fetch real data later, mock for now to show UI
-    setTimeout(() => {
-      setWorkspaces([
-        { id: "1", name: "Engineering Team", description: "Frontend and Backend development", _count: { projects: 3, members: 8 } },
-        { id: "2", name: "Marketing", description: "Campaigns and SEO", _count: { projects: 1, members: 4 } },
-      ]);
-      setIsLoading(false);
-    }, 500);
-  }, []);
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Workspaces</h1>
-          <p className="text-slate-400 mt-1">Manage your teams and organizations</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-indigo-500/20">
-          <Plus className="w-4 h-4" />
-          New Workspace
-        </button>
-      </div>
-
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-48 glass rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {workspaces.map((workspace) => (
-            <Link key={workspace.id} href={`/workspaces/${workspace.id}`}>
-              <div className="glass-card hover:border-indigo-500/50 transition-all p-6 rounded-xl flex flex-col h-full group">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-lg">
-                    {workspace.name.substring(0, 2).toUpperCase()}
-                  </div>
-                  <button className="text-slate-500 hover:text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Settings className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-indigo-400 transition-colors">
-                  {workspace.name}
-                </h3>
-                <p className="text-slate-400 text-sm mb-6 flex-1 line-clamp-2">
-                  {workspace.description || "No description"}
-                </p>
-                
-                <div className="flex items-center gap-4 text-xs font-medium text-slate-500 border-t border-white/5 pt-4">
-                  <div className="flex items-center gap-1.5">
-                    <LayoutDashboard className="w-4 h-4" />
-                    <span>{workspace._count.projects} Projects</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-4 h-4" />
-                    <span>{workspace._count.members} Members</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    let active = true;
+    fetchWorkspaces().then((data) => { if (active) { setWorkspaces(data); setError(""); } }).catch((error) => { if (active) setError(errorMessage(error, "We couldn't load your workspaces.")); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [version]);
+  async function createWorkspace(event: FormEvent) {
+    event.preventDefault();
+    if (!name.trim() || busy) return;
+    setBusy(true); setFormError("");
+    try {
+      const response = await api.post<ApiResponse<Workspace>>("/workspaces", { name: name.trim(), description: description.trim() });
+      setWorkspaces((items) => [...items, { ...response.data.data, _count: { projects: 0, members: 1 } }]); setCreating(false); setName(""); setDescription("");
+    } catch (error) { setFormError(errorMessage(error, "We couldn't create your workspace.")); } finally { setBusy(false); }
+  }
+  return <div className="page-enter mx-auto max-w-7xl space-y-8"><div className="page-header"><div><p className="eyebrow mb-3">A place for every team</p><h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Workspaces<span className="text-primary">.</span></h1><p className="mt-3 text-sm text-[#93998d]">Shared goals start with a shared space.</p></div><button className="btn-primary" onClick={() => setCreating(true)}><Plus size={17} />New workspace</button></div>
+    {creating && <form onSubmit={createWorkspace} className="panel space-y-5 border-primary/30 p-6"><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Create a workspace</h2><button type="button" aria-label="Close workspace form" className="text-[#93998d]" onClick={() => setCreating(false)}><X size={18} /></button></div>{formError && <ErrorState message={formError} />}<div className="grid gap-5 sm:grid-cols-2"><div><label htmlFor="workspace-name" className="mb-2 block text-xs text-[#b1b7a9]">Workspace name</label><input autoFocus id="workspace-name" className="field w-full" value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} placeholder="e.g. Product studio" /></div><div><label htmlFor="workspace-description" className="mb-2 block text-xs text-[#b1b7a9]">Description (optional)</label><input id="workspace-description" className="field w-full" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What brings your team together?" /></div></div><div className="flex justify-end gap-3"><button type="button" className="btn-secondary" disabled={busy} onClick={() => setCreating(false)}>Cancel</button><button disabled={busy || !name.trim()} className="btn-primary">{busy && <Loader2 size={16} className="animate-spin" />}{busy ? "Creating…" : "Create workspace"}</button></div></form>}
+    {loading ? <LoadingState /> : error ? <ErrorState message={error} onRetry={() => { setLoading(true); setVersion((n) => n + 1); }} /> : workspaces.length === 0 ? <EmptyState title="Give your team a home" description="A workspace keeps your projects and people connected. Create your first one to get started." action={<button className="btn-primary" onClick={() => setCreating(true)}><Plus size={16} />Create a workspace</button>} /> : <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{workspaces.map((workspace) => <Link key={workspace.id} href={`/workspaces/${workspace.id}`} className="panel group flex flex-col p-6 transition hover:-translate-y-1 hover:border-[#606c50]"><div className="mb-7 flex items-start justify-between"><div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-lg font-semibold text-primary">{workspace.name.slice(0, 2).toUpperCase()}</div><ArrowUpRight size={18} className="text-[#686e65] group-hover:text-primary" /></div><p className="eyebrow mb-2">Workspace</p><h2 className="text-xl font-semibold tracking-tight group-hover:text-primary">{workspace.name}</h2><p className="mb-8 mt-2 line-clamp-2 min-h-10 text-sm leading-5 text-[#93998d]">{workspace.description || "Your team’s shared space for meaningful work."}</p><div className="mt-auto flex items-center gap-5 border-t border-border pt-4 text-xs text-[#93998d]"><span className="flex items-center gap-2"><FolderKanban size={14} />{workspace._count?.projects || 0} projects</span><span className="flex items-center gap-2"><Users size={14} />{workspace._count?.members || 0} members</span></div></Link>)}</div>}
+    <div className="flex items-center gap-2 text-xs text-[#686e65]"><Building2 size={14} />One space for your people, projects, and possibilities.</div>
+  </div>;
 }

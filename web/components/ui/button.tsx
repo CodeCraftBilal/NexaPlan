@@ -4,21 +4,21 @@ import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
-        destructive: "bg-red-500 text-white hover:bg-red-600 shadow-sm",
-        outline: "border border-slate-300 bg-transparent hover:bg-slate-100 text-slate-900",
-        secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200",
-        ghost: "hover:bg-slate-100 text-slate-700 hover:text-slate-900",
-        link: "text-blue-600 underline-offset-4 hover:underline",
+        default: "bg-primary text-[#18200f] hover:bg-primary-hover",
+        destructive: "bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/20",
+        outline: "border border-border bg-transparent hover:bg-white/5 text-foreground",
+        secondary: "bg-surface text-foreground hover:bg-white/10 border border-border",
+        ghost: "hover:bg-white/5 text-[#a7aea2] hover:text-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        sm: "h-9 rounded-lg px-3",
+        lg: "h-12 rounded-xl px-6",
         icon: "h-10 w-10",
       },
     },
@@ -36,15 +36,17 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, isLoading, children, ...props }, ref) => {
+  ({ className, variant, size, isLoading, children, disabled, type = "button", ...props }, ref) => {
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        disabled={isLoading || props.disabled}
         {...props}
+        type={type}
+        disabled={isLoading || disabled}
+        aria-busy={isLoading || undefined}
       >
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isLoading && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}
         {children}
       </button>
     )

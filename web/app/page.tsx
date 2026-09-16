@@ -1,98 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Sparkles, LayoutDashboard, Zap } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Circle, Command, Layers, Sparkles, LayoutGrid, Target, Workflow } from "lucide-react";
+import { Brand } from "@/components/brand";
 import { useAuthStore } from "@/stores/authStore";
 
 export default function LandingPage() {
-  const { isAuthenticated } = useAuthStore();
-
-  return (
-    <div className="flex flex-col min-h-screen relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/20 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-fuchsia-600/20 blur-[120px] pointer-events-none" />
-      
-      <header className="flex items-center justify-between px-8 py-6 z-10 border-b border-white/5 bg-background/50 backdrop-blur-md sticky top-0">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-xl font-bold tracking-tight">ProjectAI</span>
-        </div>
-        <div className="flex items-center gap-4">
-          {isAuthenticated ? (
-            <Link href="/projects" className="px-4 py-2 rounded-full bg-white text-black text-sm font-medium hover:bg-slate-200 transition-colors">
-              Go to Dashboard
-            </Link>
-          ) : (
-            <>
-              <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                Sign In
-              </Link>
-              <Link href="/register" className="px-4 py-2 rounded-full bg-white text-black text-sm font-medium hover:bg-slate-200 transition-colors">
-                Get Started
-              </Link>
-            </>
-          )}
-        </div>
-      </header>
-
-      <main className="flex-1 flex flex-col items-center justify-center px-4 text-center z-10 py-20">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm font-medium mb-8">
-          <Sparkles className="w-4 h-4" />
-          <span>The future of project management is here</span>
-        </div>
-        
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 max-w-4xl leading-tight">
-          Manage projects effortlessly with <span className="text-gradient">AI assistance</span>
-        </h1>
-        
-        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed">
-          ProjectAI combines standard project management tools with intelligent AI to help you plan, track, and complete your work faster than ever before.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link href="/register" className="flex items-center gap-2 px-8 py-4 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)]">
-            Start Planning Now
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-          <Link href="/login" className="flex items-center gap-2 px-8 py-4 rounded-full glass hover:bg-white/10 text-white font-medium transition-all">
-            <LayoutDashboard className="w-5 h-5" />
-            Go to Dashboard
-          </Link>
-        </div>
-
-        <div className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full text-left">
-          <FeatureCard 
-            icon={<Sparkles className="w-6 h-6 text-indigo-400" />}
-            title="AI Project Planning"
-            description="Describe your idea and let AI generate a structured project plan with phases and tasks instantly."
-          />
-          <FeatureCard 
-            icon={<Zap className="w-6 h-6 text-fuchsia-400" />}
-            title="Risk Detection"
-            description="Our AI continuously analyzes your project progress to detect bottlenecks and overdue risks before they become problems."
-          />
-          <FeatureCard 
-            icon={<LayoutDashboard className="w-6 h-6 text-emerald-400" />}
-            title="Real-time Collaboration"
-            description="Work together seamlessly with real-time updates, kanban boards, and task assignments."
-          />
-        </div>
-      </main>
-    </div>
-  );
-}
-
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
-  return (
-    <div className="glass-card p-8 rounded-2xl flex flex-col gap-4">
-      <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-        {icon}
-      </div>
-      <h3 className="text-xl font-bold">{title}</h3>
-      <p className="text-slate-400 leading-relaxed">{description}</p>
-    </div>
-  );
+  const authenticated = useAuthStore(state => state.isAuthenticated);
+  const destination = authenticated ? "/dashboard" : "/register";
+  return <div className="overflow-hidden bg-background">
+    <header className="mx-auto flex h-24 max-w-[1280px] items-center justify-between gap-5 px-6 sm:px-10"><Brand /><nav aria-label="Website navigation" className="flex items-center gap-6"><a href="#how-it-works" className="hidden text-xs text-zinc-400 hover:text-white sm:block">How it works</a><Link href={authenticated ? "/dashboard" : "/login"} className="text-xs text-zinc-300 hover:text-primary">{authenticated ? "Your workspace" : "Sign in"}</Link><Link href={destination} className="btn-primary !min-h-9 !px-4 !py-2.5 !text-xs">Get started <ArrowUpRight className="size-3.5" /></Link></nav></header>
+    <main>
+      <section className="relative mx-auto grid max-w-[1280px] items-center gap-14 px-6 pb-20 pt-10 sm:px-10 sm:pt-16 lg:min-h-[650px] lg:grid-cols-[1fr_1.1fr] lg:gap-12 lg:pb-24">
+        <div className="page-enter relative z-10"><div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-[10px] text-zinc-300"><span className="size-1.5 rounded-full bg-primary" />A clearer way to move work forward<ArrowUpRight className="ml-1 size-3 text-primary" /></div><h1 className="max-w-xl text-[48px] font-medium leading-[1.08] tracking-[-2.5px] sm:text-[64px] sm:tracking-[-3.5px]">Big ideas.<br />Clear plans.<br /><span className="text-primary">Real progress.</span></h1><p className="mt-7 max-w-sm text-sm leading-[1.85] text-zinc-400">Bring your projects, people, and next steps together. Meet the thoughtful workspace with AI on your side.</p><div className="mt-8 flex flex-wrap items-center gap-5"><Link href={destination} className="btn-primary !px-6 !py-3.5">{authenticated ? "Open your workspace" : "Build something great"}<ArrowRight className="size-4" /></Link><a href="#how-it-works" className="muted-link">Take a closer look <ArrowUpRight className="size-3.5" /></a></div><div className="mt-7 flex gap-4 text-[10px] text-zinc-500"><span className="flex items-center gap-1.5"><Check className="size-3 text-primary" />Your team, in sync</span><span className="flex items-center gap-1.5"><Check className="size-3 text-primary" />Your ideas, in motion</span></div></div>
+        <div className="relative" aria-label="Illustrative preview of a ProjectAI workspace"><div className="landing-orbit absolute -inset-16 rounded-full border border-primary/5" /><div className="absolute -inset-7 rounded-full border border-primary/5" /><div className="relative rounded-2xl border border-[#3b4431] bg-[#191d17] p-1.5 shadow-2xl shadow-black/40 lg:rotate-[-2deg]"><div className="flex items-center gap-1.5 border-b border-border px-4 py-3"><span className="size-1.5 rounded-full bg-zinc-600" /><span className="size-1.5 rounded-full bg-zinc-600" /><span className="size-1.5 rounded-full bg-zinc-600" /><span className="mx-auto text-[8px] text-zinc-500">projectai / your next big thing</span><Command className="size-3 text-zinc-600" /></div><div className="p-5 sm:p-7"><div className="mb-6 flex items-start justify-between"><div><span className="text-[9px] text-zinc-500">WORKSPACE / OVERVIEW</span><h2 className="mt-2 text-lg font-medium tracking-tight sm:text-xl">Good things are in motion.</h2><p className="mt-1.5 text-[10px] text-zinc-500">A clear view of the work that matters.</p></div><span className="flex size-8 items-center justify-center rounded-full bg-primary/15 text-[10px] text-primary">JD</span></div><div className="mb-5 grid grid-cols-3 gap-2 sm:gap-3">{[["Projects", "04", "text-primary"], ["In progress", "12", "text-[#e9ba73]"], ["Completed", "28", "text-[#acb9f1]"]].map(([name, number, color]) => <div key={name} className="rounded-lg border border-border bg-background/40 p-3"><p className="text-[8px] text-zinc-500">{name}</p><p className={`mt-2 text-2xl font-medium ${color}`}>{number}<span className="ml-2 text-[8px] text-zinc-600">↗</span></p></div>)}</div><div className="rounded-xl border border-border bg-background/30"><div className="flex items-center justify-between border-b border-border px-4 py-3"><span className="text-[10px] font-medium">Website launch</span><span className="rounded bg-primary/10 px-1.5 py-0.5 text-[8px] text-primary">In progress</span></div>{[["Map out the big picture", true], ["Give the brand a fresh start", true], ["Build a thoughtful experience", false], ["Share it with the world", false]].map(([title, done]) => <div key={String(title)} className="flex items-center gap-2.5 border-b border-white/[0.03] px-4 py-3">{done ? <span className="flex size-3.5 items-center justify-center rounded-full bg-primary/15 text-primary"><Check className="size-2.5" /></span> : <Circle className="size-3.5 text-zinc-600" />}<span className={`text-[10px] ${done ? "text-zinc-500 line-through" : "text-zinc-300"}`}>{title}</span><span className="ml-auto size-4 rounded-full bg-[#343b2c]" /></div>)}</div><p className="mt-3 text-right text-[8px] text-zinc-600">Illustrative workspace preview</p></div></div><div className="relative -mt-4 ml-8 flex items-center gap-3 rounded-xl border border-primary/30 bg-[#27321e] px-4 py-3 shadow-xl sm:absolute sm:-bottom-6 sm:-left-5 sm:ml-0 sm:max-w-[310px] lg:rotate-[2deg]"><span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-[#27321e]"><Sparkles className="size-4" /></span><div><p className="text-[10px] font-medium text-primary">A little help from AI</p><p className="mt-1 text-[9px] leading-relaxed text-[#b8c4ac]">From “where do we start?” to a clear next step.</p></div></div></div>
+      </section>
+      <section id="how-it-works" className="border-t border-border bg-[#151815]"><div className="mx-auto max-w-[1280px] px-6 py-16 sm:px-10"><div className="mb-10 flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow mb-3 !text-primary">Built around your flow</p><h2 className="text-3xl font-medium tracking-[-1px]">Less friction. More momentum.</h2></div><p className="max-w-xs text-xs leading-relaxed text-zinc-500">From the first spark to the final checkmark.<br />One calm place for everything in between.</p></div><div className="grid gap-5 md:grid-cols-3">{[{number:"01", icon: Layers, title:"Make space for your ideas", text:"Bring people and projects together in workspaces that keep the bigger picture in view."}, {number:"02", icon: Workflow, title:"Find your team’s rhythm", text:"Break work into tasks, set priorities, and keep everything moving with a visual project board."}, {number:"03", icon: Target, title:"Move forward with clarity", text:"Ask AI for a plan, a project summary, or a fresh look at what could be holding your team back."}].map(item => <div key={item.number} className="rounded-xl border border-border bg-background/40 p-6"><div className="mb-9 flex items-center justify-between"><item.icon className="size-5 text-primary" /><span className="text-[10px] text-zinc-600">/ {item.number}</span></div><h3 className="text-sm font-medium">{item.title}</h3><p className="mt-3 text-xs leading-[1.85] text-zinc-500">{item.text}</p></div>)}</div></div></section>
+      <section className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-8 px-6 py-16 sm:px-10"><div className="flex items-center gap-4"><LayoutGrid className="hidden size-9 text-primary sm:block" /><div><h2 className="text-xl font-medium tracking-tight">Your next chapter starts with a plan.</h2><p className="mt-2 text-xs text-zinc-500">Give your best ideas a place to grow.</p></div></div><Link href={destination} className="btn-primary">Let’s get to work <ArrowRight className="size-4" /></Link></section>
+    </main><footer className="border-t border-border"><div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-5 px-6 py-7 sm:px-10"><Brand /><span className="text-[10px] text-zinc-600">A little more organized. A little more possible.</span></div></footer>
+  </div>;
 }

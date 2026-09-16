@@ -1,143 +1,33 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, CheckSquare, KanbanSquare, Activity, Sparkles, Plus, ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2, Plus, Sparkles } from "lucide-react";
+import { api } from "@/lib/api";
+import { errorMessage, label } from "@/lib/project-data";
+import type { Task, TaskStatus } from "@/lib/types";
+import { EmptyState, ErrorState, LoadingState, ProjectHeader, Stat, TaskComposer, TaskRow, useProject } from "@/components/project-ui";
 
 export default function ProjectOverviewPage() {
-  const params = useParams();
-  const projectId = params.projectId;
-
-  const project = {
-    name: "Web App Refactor",
-    description: "Modernize legacy codebase with React and Next.js",
-    status: "ACTIVE",
-    progress: 68,
-    stats: {
-      total: 45,
-      completed: 31,
-      inProgress: 8,
-      overdue: 2
-    }
-  };
-
-  const tabs = [
-    { name: "Overview", href: `/projects/${projectId}`, icon: LayoutDashboard, active: true },
-    { name: "List", href: `/projects/${projectId}/tasks`, icon: CheckSquare, active: false },
-    { name: "Board", href: `/projects/${projectId}/board`, icon: KanbanSquare, active: false },
-    { name: "AI Assistant", href: `/projects/${projectId}/ai`, icon: Sparkles, active: false },
-  ];
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex flex-col gap-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-bold text-slate-300 tracking-wider uppercase">
-                {project.status}
-              </span>
-            </div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">{project.name}</h1>
-            <p className="text-slate-400 mt-2 max-w-2xl">{project.description}</p>
-          </div>
-          
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-indigo-500/20">
-            <Plus className="w-4 h-4" />
-            Add Task
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex items-center gap-1 border-b border-white/5">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <Link
-                key={tab.name}
-                href={tab.href}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors ${
-                  tab.active 
-                    ? "border-indigo-500 text-indigo-400" 
-                    : "border-transparent text-slate-400 hover:text-slate-200 hover:border-white/10"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.name}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="glass-card p-6 rounded-2xl">
-            <h2 className="text-lg font-bold text-white mb-6">Project Progress</h2>
-            <div className="flex items-end justify-between mb-2">
-              <span className="text-4xl font-extrabold text-white">{project.progress}%</span>
-              <span className="text-sm font-medium text-slate-400">{project.stats.completed} of {project.stats.total} tasks completed</span>
-            </div>
-            <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-full" 
-                style={{ width: `${project.progress}%` }}
-              />
-            </div>
-          </div>
-          
-          {/* Recent Tasks Mock */}
-          <div className="glass-card p-6 rounded-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">Recent Tasks</h2>
-              <Link href={`/projects/${projectId}/tasks`} className="text-sm text-indigo-400 hover:text-indigo-300">View all</Link>
-            </div>
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="p-4 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded border border-slate-500" />
-                    <span className="text-sm font-medium text-slate-200">Task {i} implementation</span>
-                  </div>
-                  <span className="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">TODO</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
-          <div className="glass-card p-6 rounded-2xl border-indigo-500/20">
-            <div className="flex items-center gap-2 mb-4 text-indigo-400">
-              <Sparkles className="w-5 h-5" />
-              <h2 className="text-lg font-bold">AI Insight</h2>
-            </div>
-            <p className="text-slate-300 text-sm leading-relaxed mb-4">
-              Project is on track. 2 high-priority tasks are due this week. I recommend focusing on the Authentication module next as it blocks 3 other tasks.
-            </p>
-            <Link href={`/projects/${projectId}/ai`} className="text-sm font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
-              Open AI Assistant <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="glass-card p-6 rounded-2xl">
-            <h2 className="text-lg font-bold text-white mb-4">Statistics</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-white/5">
-                <div className="text-2xl font-bold text-white mb-1">{project.stats.inProgress}</div>
-                <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">In Progress</div>
-              </div>
-              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                <div className="text-2xl font-bold text-rose-400 mb-1">{project.stats.overdue}</div>
-                <div className="text-xs font-medium text-rose-400 uppercase tracking-wider">Overdue</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  const { projectId } = useParams<{ projectId: string }>();
+  const { project, tasks, setTasks, error, setError, loading, retry } = useProject(projectId);
+  const [creating, setCreating] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  async function updateStatus(task: Task, status: TaskStatus) {
+    setBusy(task.id);
+    try { await api.patch(`/tasks/${task.id}/status`, { status }); setTasks((items) => items.map((item) => item.id === task.id ? { ...item, status } : item)); setError(""); } catch (error) { setError(errorMessage(error, "We couldn't update this task.")); } finally { setBusy(null); }
+  }
+  if (loading) return <LoadingState />;
+  if (!project) return <ErrorState message={error || "Project unavailable."} onRetry={retry} />;
+  const completed = tasks.filter((task) => task.status === "COMPLETED").length;
+  const progress = tasks.length ? Math.round(completed / tasks.length * 100) : 0;
+  const inProgress = tasks.filter((task) => task.status === "IN_PROGRESS").length;
+  const blocked = tasks.filter((task) => task.status === "BLOCKED").length;
+  return <div className="page-enter mx-auto max-w-7xl space-y-7"><ProjectHeader project={project} action={<button className="btn-primary shrink-0" onClick={() => setCreating(true)}><Plus size={16} />Add task</button>} />{error && <ErrorState message={error} />}{creating && <TaskComposer project={project} onCreated={(task) => setTasks((items) => [task, ...items])} onClose={() => setCreating(false)} />}
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4"><Stat title="Total tasks" value={tasks.length} caption="Everything in this project" /><Stat title="Completed" value={completed} caption="One step closer to the goal" /><Stat title="In progress" value={inProgress} caption="Moving things forward" /><Stat title="Blocked" value={blocked} caption={blocked ? "Needs your attention" : "The path is clear"} /></div>
+    <div className="grid items-start gap-6 xl:grid-cols-[1fr_320px]"><div className="space-y-6"><section className="panel p-6"><div className="mb-8 flex items-center justify-between"><h2 className="text-sm font-semibold">Project momentum</h2><CheckCircle2 size={17} className="text-primary" /></div><div className="mb-4 flex items-end justify-between gap-4"><span className="text-5xl font-semibold tracking-tighter">{progress}<span className="ml-1 text-2xl text-[#686e65]">%</span></span><p className="text-xs text-[#93998d]">{completed} of {tasks.length} tasks complete</p></div><div className="h-2.5 overflow-hidden rounded-full bg-background"><div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${progress}%` }} /></div><p className="mt-4 text-xs text-[#686e65]">{tasks.length ? "Every finished task moves the whole team forward." : "Add your first task to start building momentum."}</p></section><section className="panel overflow-hidden"><div className="flex items-center justify-between border-b border-border p-5"><h2 className="text-sm font-semibold">Recent tasks</h2><Link href={`/projects/${projectId}/tasks`} className="inline-flex items-center gap-1 text-xs text-[#93998d] hover:text-primary">View all<ArrowRight size={13} /></Link></div>{tasks.length ? tasks.slice(0, 5).map((task) => <TaskRow key={task.id} task={task} onStatus={updateStatus} busy={busy === task.id} />) : <div className="p-5"><EmptyState title="A clean slate" description="Break your project into small, achievable steps." action={<button className="btn-secondary" onClick={() => setCreating(true)}><Plus size={15} />Add your first task</button>} /></div>}</section></div>
+    <aside className="space-y-5"><div className="panel border-primary/20 p-6"><div className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles size={19} /></div><p className="eyebrow mb-2">A fresh perspective</p><h2 className="text-xl font-medium tracking-tight">Your next move,<br />a little clearer.</h2><p className="mb-6 mt-3 text-sm leading-6 text-[#93998d]">Turn your project context into an actionable plan, or spot risks before they slow your team down.</p><Link href={`/projects/${projectId}/ai`} className="inline-flex items-center gap-2 text-sm font-medium text-primary">Open AI assistant<ArrowRight size={15} /></Link></div><div className="panel p-5"><h2 className="mb-5 text-sm font-semibold">Project details</h2><dl className="space-y-4 text-xs"><div className="flex justify-between"><dt className="text-[#93998d]">Priority</dt><dd>{label(project.priority)}</dd></div><div className="flex justify-between"><dt className="text-[#93998d]">Workspace</dt><dd>{project.workspace?.name || "—"}</dd></div><div className="flex justify-between"><dt className="text-[#93998d]">Team members</dt><dd>{project.members?.length || 0}</dd></div></dl></div></aside>
     </div>
-  );
+  </div>;
 }

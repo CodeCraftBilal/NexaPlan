@@ -1,89 +1,28 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
-import { LayoutDashboard, Users, Settings, Plus, FolderKanban } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, FolderKanban, Plus, Users } from "lucide-react";
 import Link from "next/link";
+import { api } from "@/lib/api";
+import { errorMessage, label } from "@/lib/project-data";
+import type { ApiResponse, Workspace } from "@/lib/types";
+import { EmptyState, ErrorState, LoadingState, ProjectCard } from "@/components/project-ui";
 
 export default function WorkspaceOverviewPage() {
-  const params = useParams();
-  const workspaceId = params.workspaceId as string;
-  
-  // Mock data for UI development
-  const workspace = {
-    id: workspaceId,
-    name: "Engineering Team",
-    description: "Frontend and Backend development",
-    members: [{ id: "1", user: { name: "Bilal Khan", email: "bilal@example.com" } }],
-    projects: [
-      { id: "101", name: "Web App Refactor", status: "ACTIVE", priority: "HIGH" },
-      { id: "102", name: "Mobile App MVP", status: "PLANNING", priority: "MEDIUM" }
-    ]
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-2xl">
-            {workspace.name.substring(0, 2).toUpperCase()}
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">{workspace.name}</h1>
-            <p className="text-slate-400 mt-1">{workspace.description}</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 glass hover:bg-white/10 text-white rounded-lg font-medium transition-colors">
-            <Users className="w-4 h-4" />
-            Members
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 glass hover:bg-white/10 text-white rounded-lg font-medium transition-colors">
-            <Settings className="w-4 h-4" />
-            Settings
-          </button>
-        </div>
-      </div>
-
-      <div className="border-t border-white/5 my-8"></div>
-
-      {/* Projects Section */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <FolderKanban className="w-5 h-5 text-indigo-400" />
-            Projects
-          </h2>
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 rounded-lg text-sm font-medium transition-colors">
-            <Plus className="w-4 h-4" />
-            Create Project
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {workspace.projects.map((project) => (
-            <Link key={project.id} href={`/projects/${project.id}`}>
-              <div className="glass hover:border-indigo-500/30 transition-all p-5 rounded-xl flex flex-col group">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-bold text-white group-hover:text-indigo-400 transition-colors">
-                    {project.name}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-2 mt-auto">
-                  <span className="px-2 py-1 rounded bg-white/5 text-xs font-medium text-slate-300">
-                    {project.status}
-                  </span>
-                  <span className="px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 text-xs font-medium">
-                    {project.priority}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  const { workspaceId } = useParams<{ workspaceId: string }>();
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0);
+  useEffect(() => {
+    let active = true;
+    api.get<ApiResponse<Workspace>>(`/workspaces/${workspaceId}`).then((response) => { if (active) { setWorkspace(response.data.data); setError(""); } }).catch((error) => { if (active) setError(errorMessage(error, "We couldn't load this workspace.")); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [workspaceId, version]);
+  if (loading) return <LoadingState />;
+  if (error || !workspace) return <ErrorState message={error || "Workspace unavailable."} onRetry={() => { setLoading(true); setVersion((n) => n + 1); }} />;
+  return <div className="page-enter mx-auto max-w-7xl space-y-8"><Link href="/workspaces" className="inline-flex items-center gap-2 text-xs text-[#93998d] hover:text-foreground"><ArrowLeft size={14} />All workspaces</Link><div className="page-header"><div className="flex items-center gap-5"><div className="hidden h-16 w-16 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-xl font-semibold text-primary sm:flex">{workspace.name.slice(0, 2).toUpperCase()}</div><div><p className="eyebrow mb-2">Workspace overview</p><h1 className="text-3xl font-semibold tracking-tight">{workspace.name}</h1><p className="mt-2 text-sm text-[#93998d]">{workspace.description || "A shared space for your team’s best work."}</p></div></div><Link href={`/projects/new?workspace=${workspace.id}`} className="btn-primary"><Plus size={16} />New project</Link></div>
+    <div className="grid items-start gap-7 xl:grid-cols-[1fr_300px]"><section className="space-y-5"><div className="flex items-center gap-2 border-b border-border pb-4"><FolderKanban size={17} className="text-primary" /><h2 className="text-sm font-semibold">Projects</h2><span className="ml-1 text-xs text-[#686e65]">{workspace.projects?.length || 0}</span></div>{workspace.projects?.length ? <div className="grid gap-5 md:grid-cols-2">{workspace.projects.map((project, index) => <ProjectCard key={project.id} project={{ ...project, workspace: { name: workspace.name } }} index={index} />)}</div> : <EmptyState title="Make your first move" description="Start a project to give your team's work a clear direction." action={<Link href={`/projects/new?workspace=${workspace.id}`} className="btn-primary"><Plus size={16} />Create project</Link>} />}</section><aside className="panel p-5"><div className="mb-6 flex items-center gap-2"><Users size={16} className="text-[#93998d]" /><h2 className="text-sm font-semibold">Your team</h2><span className="ml-auto text-xs text-[#686e65]">{workspace.members?.length || 0}</span></div><div className="space-y-5">{workspace.members?.map((member) => <div key={member.id} className="flex items-center gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-surface-hover text-xs text-[#c5cbbd]">{member.user.name.slice(0, 2).toUpperCase()}</div><div className="min-w-0"><p className="truncate text-sm font-medium">{member.user.name}</p><p className="mt-0.5 text-xs text-[#93998d]">{label(member.role)}</p></div></div>)}</div><p className="mt-6 border-t border-border pt-4 text-xs leading-5 text-[#686e65]">Great work happens together. Everyone in this space can stay close to the work.</p></aside></div>
+  </div>;
 }

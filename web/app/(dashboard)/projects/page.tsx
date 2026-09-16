@@ -1,97 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FolderKanban, Plus, MoreVertical, LayoutDashboard, Clock } from "lucide-react";
+import { ArrowUpRight, FolderKanban, Plus, Search } from "lucide-react";
+import { fetchProjects, errorMessage } from "@/lib/project-data";
+import type { Project } from "@/lib/types";
+import { EmptyState, ErrorState, LoadingState, ProjectCard } from "@/components/project-ui";
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("ALL");
+  const [version, setVersion] = useState(0);
   useEffect(() => {
-    setTimeout(() => {
-      setProjects([
-        { id: "101", name: "Web App Refactor", description: "Modernize legacy codebase", status: "ACTIVE", priority: "HIGH", workspace: { name: "Engineering Team" }, _count: { tasks: 45, members: 4 } },
-        { id: "102", name: "Mobile App MVP", description: "Initial release for iOS", status: "PLANNING", priority: "MEDIUM", workspace: { name: "Engineering Team" }, _count: { tasks: 12, members: 3 } },
-      ]);
-      setIsLoading(false);
-    }, 500);
-  }, []);
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Projects</h1>
-          <p className="text-slate-400 mt-1">Manage all your ongoing projects</p>
-        </div>
-        <Link href="/projects/new" className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-indigo-500/20">
-          <Plus className="w-4 h-4" />
-          New Project
-        </Link>
-      </div>
-
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-48 glass rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <Link key={project.id} href={`/projects/${project.id}`}>
-              <div className="glass-card hover:border-indigo-500/50 transition-all p-6 rounded-xl flex flex-col h-full group relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4">
-                  <button className="text-slate-500 hover:text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
-                </div>
-                
-                <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4">
-                  <FolderKanban className="w-5 h-5" />
-                </div>
-                
-                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-indigo-400 transition-colors">
-                  {project.name}
-                </h3>
-                <p className="text-slate-400 text-sm mb-4 line-clamp-2 h-10">
-                  {project.description || "No description provided."}
-                </p>
-                
-                <div className="flex items-center gap-2 mb-6">
-                  <span className="px-2.5 py-1 rounded-md bg-white/5 text-[11px] font-medium text-slate-300 tracking-wide uppercase">
-                    {project.status}
-                  </span>
-                  <span className="px-2.5 py-1 rounded-md bg-indigo-500/10 text-[11px] font-medium text-indigo-400 tracking-wide uppercase">
-                    {project.priority}
-                  </span>
-                </div>
-                
-                <div className="mt-auto border-t border-white/5 pt-4 flex items-center justify-between text-xs font-medium text-slate-500">
-                  <div className="flex items-center gap-1.5">
-                    <LayoutDashboard className="w-4 h-4" />
-                    <span>{project.workspace.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <CheckSquare className="w-4 h-4" />
-                    <span>{project._count.tasks} tasks</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CheckSquare(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 11 12 14 22 4"></polyline>
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-    </svg>
-  );
+    let active = true;
+    fetchProjects().then((data) => { if (active) { setProjects(data); setError(""); } }).catch((error) => { if (active) setError(errorMessage(error, "We couldn't load your projects.")); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [version]);
+  const filtered = projects.filter((project) => `${project.name} ${project.description || ""} ${project.workspace?.name || ""}`.toLowerCase().includes(query.toLowerCase()) && (filter === "ALL" || project.status === filter));
+  return <div className="page-enter mx-auto max-w-7xl space-y-8">
+    <div className="page-header"><div><p className="eyebrow mb-3">Make great things happen</p><h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your projects<span className="text-primary">.</span></h1><p className="mt-3 text-sm text-[#93998d]">Every initiative. One clear view.</p></div><Link href="/projects/new" className="btn-primary"><Plus size={17} />New project</Link></div>
+    <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row"><div className="flex flex-wrap items-center gap-2">{[{ id: "ALL", name: "All projects" }, { id: "ACTIVE", name: "Active" }, { id: "PLANNING", name: "Planning" }, { id: "COMPLETED", name: "Completed" }].map((tab) => <button key={tab.id} onClick={() => setFilter(tab.id)} className={`rounded-lg px-3 py-2 text-xs font-medium transition ${filter === tab.id ? "bg-surface-hover text-foreground" : "text-[#93998d] hover:text-foreground"}`}>{tab.name}{tab.id === "ALL" && <span className="ml-2 rounded bg-background px-1.5 py-0.5 text-[10px] text-[#93998d]">{projects.length}</span>}</button>)}</div><div className="relative"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#686e65]" /><input aria-label="Search projects" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects…" className="field w-full !py-2 !pl-9 text-xs sm:w-60" /></div></div>
+    {loading ? <LoadingState /> : error ? <ErrorState message={error} onRetry={() => { setLoading(true); setVersion((n) => n + 1); }} /> : projects.length === 0 ? <EmptyState title="Your next big thing starts here" description="Create a workspace, bring your team together, and turn your ideas into a project." action={<Link href="/projects/new" className="btn-primary"><Plus size={16} />Create your first project</Link>} /> : filtered.length === 0 ? <EmptyState title="No matching projects" description="Try another search or switch the project status above." /> : <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{filtered.map((project, index) => <ProjectCard key={project.id} project={project} index={index} />)}<Link href="/projects/new" className="group flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border p-6 text-center transition hover:border-primary/50 hover:bg-primary/[.02]"><div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full border border-border text-[#93998d] group-hover:text-primary"><Plus size={20} /></div><p className="text-sm font-medium">Start something new</p><p className="mt-2 text-xs text-[#686e65]">Make room for your next idea</p></Link></div>}
+    <div className="flex items-center gap-2 text-xs text-[#686e65]"><FolderKanban size={14} /><span>Organized by workspace. Built for momentum.</span><Link href="/workspaces" className="ml-auto inline-flex items-center gap-1 text-[#93998d] hover:text-primary">Workspaces<ArrowUpRight size={14} /></Link></div>
+  </div>;
 }
