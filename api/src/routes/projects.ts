@@ -3,6 +3,7 @@ import { authenticate } from "../middleware/auth.js";
 import type { AuthRequest } from "../middleware/auth.js";
 import { sendResponse } from "../utils/apiResponse.js";
 import { ProjectService } from "../services/project.service.js";
+import { projectSchema } from "../utils/validation.js";
 
 const router = Router();
 router.use(authenticate);
@@ -11,10 +12,10 @@ router.use(authenticate);
 // Typically POST /workspaces/:workspaceId/projects, but let's accept workspaceId in body for simplicity
 router.post("/", async (req: AuthRequest, res, next) => {
   try {
-    const { name, description, workspaceId } = req.body;
+    const { name, description, workspaceId } = projectSchema.parse(req.body);
     const project = await ProjectService.createProject({
       name,
-      description,
+      description: description ?? null,
       workspaceId,
       ownerId: req.user!.id,
     });

@@ -1,150 +1,83 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { registerSchema, loginSchema } from "../utils/validation.js";
 import { env } from "../config/env.js";
+import { prisma } from "../config/database.js";
+import { sessionCookieOptions, sessionLifetimeMs } from "../config/session.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
+import { HttpError } from "../utils/httpError.js";
 
-const router = Router();
-const prisma = new PrismaClient();
-
-const generateToken = (id: string, role: string) => {
-  return jwt.sign({ id, role }, env.JWT_SECRET, { expiresIn: "7d" });
+type SessionUser = Pick<User, "id" | "name" | "email" | "role" | "avatar">;
+type CredentialUser = SessionUser & Pick<User, "password">;
+export interface AuthRepository {
+  findByEmail(email: string): Promise<CredentialUser | null>;
+  findById(id: string): Promise<SessionUser | null>;
+  create(data: { name: string; email: string; password: string }): Promise<CredentialUser>;
+}
+const userFields = { id: true, name: true, email: true, role: true, avatar: true } as const;
+const authRepository: AuthRepository = {
+  // Case-insensitive lookup also supports accounts registered before normalization.
+  findByEmail: (email) => prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } } }),
+  findById: (id) => prisma.user.findUnique({ where: { id }, select: userFields }),
+  create: (data) => prisma.user.create({ data }),
 };
-
-router.post("/register", async (req, res) => {
-  try {
-    const validatedData = registerSchema.parse(req.body);
-
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email },
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "Email already registered" });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(validatedData.password, salt);
-
-    const user = await prisma.user.create({
-      data: {
-        name: validatedData.name,
-        email: validatedData.email,
-        password: hashedPassword,
-      },
-    });
-
-    const token = generateToken(user.id, user.role);
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    return res.status(201).json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-      },
-    });
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return res.status(400).json({ success: false, errors: error.errors });
-    }
-    console.error("Register Error:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
-  }
+const publicUser = (user: CredentialUser | SessionUser): SessionUser => ({
+  id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar,
 });
 
-router.post("/login", async (req, res) => {
-  try {
-    const validatedData = loginSchema.parse(req.body);
-
-    const user = await prisma.user.findUnique({
-      where: { email: validatedData.email },
-    });
-
-    if (!user) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
-    }
-
-    const isMatch = await bcrypt.compare(validatedData.password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
-    }
-
-    const token = generateToken(user.id, user.role);
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    return res.status(200).json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-      },
-    });
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return res.status(400).json({ success: false, errors: error.errors });
-    }
-    console.error("Login Error:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-router.post("/logout", (_req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
+export function createAuthRouter(repository: AuthRepository = authRepository) {
+  const router = Router();
+  router.use((_req, res, next) => {
+    res.setHeader("Cache-Control", "no-store");
+    next();
   });
-  return res.json({ success: true, message: "Logged out successfully" });
-});
-
-router.get("/me", authenticate, async (req: AuthRequest, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ success: false, message: "Not authenticated" });
+  router.post("/register", async (req, res, next) => {
+    try {
+      const data = registerSchema.parse(req.body);
+      if (await repository.findByEmail(data.email)) {
+        throw new HttpError(409, "Email already registered. Please sign in.");
+      }
+      const password = await bcrypt.hash(data.password, 10);
+      const user = await repository.create({ ...data, password });
+      const token = jwt.sign({ id: user.id, role: user.role }, env.JWT_SECRET, { expiresIn: "7d" });
+      res.cookie("token", token, { ...sessionCookieOptions, maxAge: sessionLifetimeMs });
+      res.status(201).json({ success: true, user: publicUser(user) });
+    } catch (error) {
+      // A simultaneous registration can pass the initial lookup before the unique constraint.
+      if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
+        next(new HttpError(409, "Email already registered. Please sign in."));
+        return;
+      }
+      next(error);
     }
-
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        avatar: true,
-      },
-    });
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    return res.json({ success: true, user });
-  } catch (error) {
-    console.error("Get Me Error:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-export default router;
+  });
+  router.post("/login", async (req, res, next) => {
+    try {
+      const data = loginSchema.parse(req.body);
+      const user = await repository.findByEmail(data.email);
+      if (!user || !(await bcrypt.compare(data.password, user.password))) {
+        throw new HttpError(401, "Invalid email or password");
+      }
+      const token = jwt.sign({ id: user.id, role: user.role }, env.JWT_SECRET, { expiresIn: "7d" });
+      res.cookie("token", token, { ...sessionCookieOptions, maxAge: sessionLifetimeMs });
+      res.json({ success: true, user: publicUser(user) });
+    } catch (error) { next(error); }
+  });
+  router.post("/logout", (_req, res) => {
+    res.clearCookie("token", sessionCookieOptions);
+    res.json({ success: true, message: "Logged out successfully" });
+  });
+  router.get("/me", authenticate, async (req: AuthRequest, res, next) => {
+    try {
+      const user = await repository.findById(req.user!.id);
+      if (!user) {
+        res.clearCookie("token", sessionCookieOptions);
+        throw new HttpError(401, "Your account is no longer available. Please sign in again.");
+      }
+      res.json({ success: true, user: publicUser(user) });
+    } catch (error) { next(error); }
+  });
+  return router;
+}

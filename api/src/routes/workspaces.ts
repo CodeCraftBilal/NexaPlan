@@ -3,14 +3,15 @@ import { authenticate } from "../middleware/auth.js";
 import type { AuthRequest } from "../middleware/auth.js";
 import { sendResponse } from "../utils/apiResponse.js";
 import { WorkspaceService } from "../services/workspace.service.js";
+import { workspaceSchema } from "../utils/validation.js";
 
 const router = Router();
 router.use(authenticate);
 
 router.post("/", async (req: AuthRequest, res, next) => {
   try {
-    const { name, description } = req.body;
-    const workspace = await WorkspaceService.createWorkspace(name, description, req.user!.id);
+    const { name, description } = workspaceSchema.parse(req.body);
+    const workspace = await WorkspaceService.createWorkspace(name, description ?? null, req.user!.id);
     sendResponse(res, 201, true, "Workspace created", workspace);
   } catch (error) {
     next(error);

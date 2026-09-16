@@ -1,8 +1,11 @@
 import { prisma } from "../config/database.js";
 import { ProjectRole } from "@prisma/client";
+import { requireProjectAccess, requireWorkspaceAccess } from "./access.service.js";
+import { HttpError } from "../utils/httpError.js";
 
 export class ProjectService {
   static async createProject(data: { name: string; description: string | null; workspaceId: string; ownerId: string }) {
+    await requireWorkspaceAccess(data.workspaceId, data.ownerId, true);
     return prisma.project.create({
       data: {
         name: data.name,
@@ -20,14 +23,11 @@ export class ProjectService {
   }
 
   static async getWorkspaceProjects(workspaceId: string, userId: string) {
-    const isWorkspaceMember = await prisma.workspaceMember.findUnique({
-      where: { workspaceId_userId: { workspaceId, userId } },
-    });
-
-    if (!isWorkspaceMember) throw new Error("Unauthorized");
+    const member = await requireWorkspaceAccess(workspaceId, userId);
+    const managesWorkspace = member.role === "OWNER" || member.role === "MANAGER";
 
     return prisma.project.findMany({
-      where: { workspaceId },
+      where: { workspaceId, ...(managesWorkspace ? {} : { members: { some: { userId } } }) },
       include: {
         _count: { select: { tasks: true, members: true } },
       },
@@ -35,6 +35,7 @@ export class ProjectService {
   }
 
   static async getProjectById(projectId: string, userId: string) {
+    await requireProjectAccess(projectId, userId);
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
@@ -43,11 +44,7 @@ export class ProjectService {
       },
     });
 
-    if (!project) throw new Error("Project not found");
-
-    const isMember = project.members.some((m) => m.userId === userId);
-    // Alternatively, if they are workspace owner, they should have access. For MVP, assuming they must be a project member.
-    if (!isMember) throw new Error("Unauthorized");
+    if (!project) throw new HttpError(404, "Project not found");
 
     return project;
   }

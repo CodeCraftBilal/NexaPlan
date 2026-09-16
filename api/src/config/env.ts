@@ -5,8 +5,7 @@ dotenv.config();
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   JWT_SECRET: z.string().min(1),
-  JWT_REFRESH_SECRET: z.string().min(1),
-  GEMINI_API_KEY: z.string().min(1),
+  GEMINI_API_KEY: z.string().optional(),
   CLIENT_URL: z.string().url(),
   PORT: z.coerce.number().default(5000),
   NODE_ENV: z

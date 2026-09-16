@@ -4,6 +4,7 @@ import type { AuthRequest } from "../middleware/auth.js";
 import { sendResponse } from "../utils/apiResponse.js";
 import { TaskService } from "../services/task.service.js";
 import { io } from "../config/socket.js";
+import { taskSchema, taskStatusSchema } from "../utils/validation.js";
 
 const router = Router();
 router.use(authenticate);
@@ -11,12 +12,12 @@ router.use(authenticate);
 router.post("/", async (req: AuthRequest, res, next) => {
   try {
     const task = await TaskService.createTask({
-      ...req.body,
+      ...taskSchema.parse(req.body),
       creatorId: req.user!.id,
     });
     
     // Broadcast via socket
-    io.to(`project_${task.projectId}`).emit("task:created", task);
+    io?.to(`project_${task.projectId}`).emit("task:created", task);
     
     sendResponse(res, 201, true, "Task created", task);
   } catch (error) {
@@ -24,9 +25,16 @@ router.post("/", async (req: AuthRequest, res, next) => {
   }
 });
 
+router.get("/mine", async (req: AuthRequest, res, next) => {
+  try {
+    const tasks = await TaskService.getMyTasks(req.user!.id);
+    sendResponse(res, 200, true, "Your tasks retrieved", tasks);
+  } catch (error) { next(error); }
+});
+
 router.get("/project/:projectId", async (req: AuthRequest, res, next) => {
   try {
-    const tasks = await TaskService.getProjectTasks(req.params.projectId as string);
+    const tasks = await TaskService.getProjectTasks(req.params.projectId as string, req.user!.id);
     sendResponse(res, 200, true, "Tasks retrieved", tasks);
   } catch (error) {
     next(error);
@@ -35,9 +43,10 @@ router.get("/project/:projectId", async (req: AuthRequest, res, next) => {
 
 router.patch("/:id/status", async (req: AuthRequest, res, next) => {
   try {
-    const task = await TaskService.updateTaskStatus(req.params.id as string, req.body.status);
+    const { status } = taskStatusSchema.parse(req.body);
+    const task = await TaskService.updateTaskStatus(req.params.id as string, status, req.user!.id);
     
-    io.to(`project_${task.projectId}`).emit("task:updated", task);
+    io?.to(`project_${task.projectId}`).emit("task:updated", task);
     
     sendResponse(res, 200, true, "Task status updated", task);
   } catch (error) {
