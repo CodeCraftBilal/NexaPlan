@@ -264,3 +264,72 @@ test("invalid task status is rejected before any database mutation", async () =>
   assert.equal(update.mock.callCount(), 0);
 });
 
+function mockContributorTransaction(options: { workspaceRole?: string | null; duplicate?: boolean; missing?: boolean } = {}) {
+  const added = mock.fn(async (args: { data: { projectId: string; userId: string; role: string } }) => ({ id: "member-2", ...args.data, user: { id: "target-user", name: "Teammate", email: "team@example.com" } }));
+  const workspaceAdded = mock.fn(async () => ({ role: "MEMBER" }));
+  const lookup = mock.fn(async () => options.missing ? null : { id: "target-user" });
+  const tx = {
+    user: { findFirst: lookup },
+    projectMember: { findUnique: async () => options.duplicate ? { id: "existing" } : null, create: added },
+    workspaceMember: { findUnique: async () => options.workspaceRole ? { role: options.workspaceRole } : null, upsert: workspaceAdded },
+  };
+  mockDatabaseMethod(prisma, "$transaction", async (callback: (client: typeof tx) => Promise<unknown>) => callback(tx));
+  return { added, workspaceAdded, lookup };
+}
+
+test("contributor endpoint requires authentication and valid input", async () => {
+  assert.equal((await post("/api/projects/project-1/contributors", {})).status, 401);
+  assert.equal((await post("/api/projects/project-1/contributors", { email: "invalid" }, session())).status, 400);
+  assert.equal((await post("/api/projects/project-1/contributors", { email: "team@example.com", role: "OWNER" }, session())).status, 400);
+});
+
+test("contributors cannot grant project access and workspace viewers cannot use manager role", async () => {
+  for (const [workspace, project] of [["MEMBER", "MEMBER"], ["MEMBER", "VIEWER"], ["VIEWER", "MANAGER"], ["MEMBER", null]]) {
+    restoreMocks();
+    mockProjectAccess(workspace!, project!);
+    const transaction = mockDatabaseMethod(prisma, "$transaction", async () => { throw new Error("Must not write"); });
+    const response = await post("/api/projects/project-1/contributors", { email: "team@example.com" }, session());
+    assert.equal(response.status, 403);
+    assert.equal(transaction.mock.callCount(), 0);
+  }
+});
+
+test("workspace owner adds a contributor and prerequisite membership without granting workspace management", async () => {
+  mockProjectAccess("OWNER", "MANAGER");
+  const { added, workspaceAdded, lookup } = mockContributorTransaction();
+  const response = await post("/api/projects/project-1/contributors", { email: " TEAM@Example.com ", role: "MANAGER" }, session());
+  assert.equal(response.status, 201);
+  assert.equal((await response.json()).data.role, "MANAGER");
+  assert.equal(added.mock.callCount(), 1);
+  assert.equal(workspaceAdded.mock.callCount(), 1);
+  assert.equal((lookup.mock.calls[0]!.arguments as unknown as [{ where: { email: { equals: string } } }])[0].where.email.equals, "team@example.com");
+  const membership = (workspaceAdded.mock.calls[0]!.arguments as unknown as [{ create: { role: string }; update: object }])[0];
+  assert.equal(membership.create.role, "MEMBER");
+  assert.deepEqual(membership.update, {});
+});
+
+test("project managers can add workspace members but cannot expand workspace membership", async () => {
+  mockProjectAccess("MEMBER", "MANAGER");
+  let tx = mockContributorTransaction({ workspaceRole: "MEMBER" });
+  assert.equal((await post("/api/projects/project-1/contributors", { email: "team@example.com" }, session())).status, 201);
+  assert.equal(tx.workspaceAdded.mock.callCount(), 0);
+  restoreMocks(); mockProjectAccess("MEMBER", "MANAGER");
+  tx = mockContributorTransaction();
+  assert.equal((await post("/api/projects/project-1/contributors", { email: "team@example.com" }, session())).status, 403);
+  assert.equal(tx.added.mock.callCount(), 0);
+  assert.equal(tx.workspaceAdded.mock.callCount(), 0);
+});
+
+test("adding contributors handles unknown accounts, duplicates, and workspace viewer restrictions", async () => {
+  for (const [options, expected] of [[{ missing: true }, 404], [{ duplicate: true }, 409], [{ workspaceRole: "VIEWER" }, 400]] as const) {
+    restoreMocks(); mockProjectAccess("OWNER", "MANAGER");
+    const tx = mockContributorTransaction(options);
+    assert.equal((await post("/api/projects/project-1/contributors", { email: "team@example.com" }, session())).status, expected);
+    assert.equal(tx.added.mock.callCount(), 0);
+    assert.equal(tx.workspaceAdded.mock.callCount(), 0);
+  }
+  restoreMocks(); mockProjectAccess("OWNER", "MANAGER");
+  mockContributorTransaction({ workspaceRole: "VIEWER" });
+  assert.equal((await post("/api/projects/project-1/contributors", { email: "team@example.com", role: "VIEWER" }, session())).status, 201);
+});
+

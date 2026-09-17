@@ -25,6 +25,11 @@ export const projectSchema = z.object({
   workspaceId: z.string().min(1, "Choose a workspace"),
 });
 
+export const contributorSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  role: z.enum(["MEMBER", "VIEWER", "MANAGER"]).default("MEMBER"),
+});
+
 const taskStatus = z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "COMPLETED", "BLOCKED", "CANCELLED"]);
 export const taskStatusSchema = z.object({ status: taskStatus });
 export const taskSchema = z.object({

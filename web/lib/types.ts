@@ -27,6 +27,7 @@ export interface Project {
   status: string;
   priority: string;
   workspaceId: string;
+  permissions?: { canManageContributors: boolean; canAddWorkspaceMembers: boolean };
   workspace?: { name: string };
   members?: Member[];
   dueDate?: string | null;

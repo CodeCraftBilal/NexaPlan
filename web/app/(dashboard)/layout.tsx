@@ -43,10 +43,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen bg-background">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:p-3 focus:text-black">Skip to content</a>
       {mobileOpen && <button aria-label="Close navigation" className="fixed inset-0 z-30 bg-black/65 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} />}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col border-r border-border bg-[#151815] transition-transform lg:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col overflow-y-auto pt-5 border-r border-border bg-[#151815] transition-transform lg:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-[84px] items-center justify-between px-6"><Brand href="/dashboard" /><button aria-label="Close navigation" className="text-zinc-400 lg:hidden" onClick={() => setMobileOpen(false)}><X className="size-5" /></button></div>
         <div className="px-4"><Link onClick={() => setMobileOpen(false)} href="/workspaces" className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-3"><span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">{user?.name?.charAt(0).toUpperCase()}</span><span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold">My workspace</span><span className="mt-0.5 block text-[10px] text-zinc-500">Make room for great work</span></span><ChevronRight className="size-3.5 text-zinc-500" /></Link></div>
-        <nav aria-label="Main navigation" className="mt-9 px-4"><p className="eyebrow mb-3 px-3">Workspace</p><div className="space-y-1">{navItems.map(item => {
+        <nav aria-label="Main navigation" className="mt-12 px-4"><p className="eyebrow mb-3 px-3">Workspace</p><div className="space-y-1">{navItems.map(item => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} aria-current={active ? "page" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-[13px] font-medium transition-colors ${active ? "bg-primary/10 text-primary" : "text-zinc-400 hover:bg-white/5 hover:text-white"}`}><Icon className="size-[18px]" />{item.label}{active && <span className="ml-auto size-1.5 rounded-full bg-primary" />}</Link>;
@@ -61,3 +61,4 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 }
+

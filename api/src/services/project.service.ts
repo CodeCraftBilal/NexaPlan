@@ -35,17 +35,50 @@ export class ProjectService {
   }
 
   static async getProjectById(projectId: string, userId: string) {
-    await requireProjectAccess(projectId, userId);
+    const access = await requireProjectAccess(projectId, userId);
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
-        members: { include: { user: { select: { id: true, name: true, avatar: true } } } },
+        members: { include: { user: { select: { id: true, name: true, email: true, avatar: true } } } },
         workspace: { select: { name: true } },
       },
     });
 
     if (!project) throw new HttpError(404, "Project not found");
 
-    return project;
+    return { ...project, permissions: { canManageContributors: access.canManageContributors, canAddWorkspaceMembers: access.canAddWorkspaceMembers } };
+  }
+
+  static async addContributor(projectId: string, actorId: string, input: { email: string; role: ProjectRole }) {
+    const access = await requireProjectAccess(projectId, actorId);
+    if (!access.canManageContributors) throw new HttpError(403, "Only project managers and workspace managers can add contributors");
+
+    try {
+      return await prisma.$transaction(async (tx) => {
+        const user = await tx.user.findFirst({ where: { email: { equals: input.email, mode: "insensitive" } }, select: { id: true } });
+        if (!user) throw new HttpError(404, "No account found with this email. Ask them to register first, then add them here.");
+        const existing = await tx.projectMember.findUnique({ where: { projectId_userId: { projectId, userId: user.id } } });
+        if (existing) throw new HttpError(409, "This person is already a contributor to this project");
+        const workspaceMember = await tx.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId: access.workspaceId, userId: user.id } } });
+        if (!workspaceMember && !access.canAddWorkspaceMembers) throw new HttpError(403, "Ask a workspace owner or manager to add this person to the workspace first");
+        if (workspaceMember?.role === "VIEWER" && input.role !== "VIEWER") throw new HttpError(400, "Workspace viewers can only be added as project viewers");
+        if (!workspaceMember) {
+          // Workspace membership is required by project access checks. Do not
+          // overwrite an existing workspace role or grant workspace management.
+          await tx.workspaceMember.upsert({
+            where: { workspaceId_userId: { workspaceId: access.workspaceId, userId: user.id } },
+            create: { workspaceId: access.workspaceId, userId: user.id, role: "MEMBER" },
+            update: {},
+          });
+        }
+        return tx.projectMember.create({
+          data: { projectId, userId: user.id, role: input.role },
+          include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+        });
+      });
+    } catch (error) {
+      if (error && typeof error === "object" && "code" in error && error.code === "P2002") throw new HttpError(409, "This person is already a contributor to this project");
+      throw error;
+    }
   }
 }

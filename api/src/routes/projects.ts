@@ -3,7 +3,7 @@ import { authenticate } from "../middleware/auth.js";
 import type { AuthRequest } from "../middleware/auth.js";
 import { sendResponse } from "../utils/apiResponse.js";
 import { ProjectService } from "../services/project.service.js";
-import { projectSchema } from "../utils/validation.js";
+import { contributorSchema, projectSchema } from "../utils/validation.js";
 
 const router = Router();
 router.use(authenticate);
@@ -29,6 +29,16 @@ router.get("/workspace/:workspaceId", async (req: AuthRequest, res, next) => {
   try {
     const projects = await ProjectService.getWorkspaceProjects(req.params.workspaceId as string, req.user!.id);
     sendResponse(res, 200, true, "Projects retrieved", projects);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:id/contributors", async (req: AuthRequest, res, next) => {
+  try {
+    const input = contributorSchema.parse(req.body);
+    const member = await ProjectService.addContributor(req.params.id as string, req.user!.id, input);
+    sendResponse(res, 201, true, "Contributor added", member);
   } catch (error) {
     next(error);
   }

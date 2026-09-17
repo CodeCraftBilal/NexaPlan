@@ -23,5 +23,9 @@ export async function requireProjectAccess(projectId: string, userId: string, wr
   if (!managesWorkspace && (!projectMember || (write && (projectMember.role === "VIEWER" || workspaceMember.role === "VIEWER")))) {
     throw new HttpError(403, write ? "You do not have permission to edit this project" : "You do not have access to this project");
   }
-  return project;
+  return {
+    ...project,
+    canManageContributors: managesWorkspace || (projectMember?.role === "MANAGER" && workspaceMember.role !== "VIEWER"),
+    canAddWorkspaceMembers: managesWorkspace,
+  };
 }
