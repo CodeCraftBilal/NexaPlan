@@ -88,4 +88,3 @@ export function TaskRow({ task, onStatus, busy = false, showProject = false }: {
 export function Stat({ title, value, caption }: { title: string; value: number | string; caption: string }) {
   return <div className="panel px-5 py-5"><p className="mb-4 flex items-center gap-2 text-xs text-[#93998d]"><Circle size={7} fill="currentColor" />{title}</p><p className="text-3xl font-semibold tracking-tight">{value}</p><p className="mt-2 text-xs text-[#686e65]">{caption}</p></div>;
 }
-

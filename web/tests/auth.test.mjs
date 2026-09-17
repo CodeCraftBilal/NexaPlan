@@ -22,11 +22,11 @@ function loadModules() {
     const output = ts.transpileModule(fs.readFileSync(filename, "utf8"), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true },
     }).outputText;
-    const module = { exports: {} };
-    modules.set(filename, module);
+    const loadedModule = { exports: {} };
+    modules.set(filename, loadedModule);
     const localRequire = (name) => name.startsWith("@/") ? load(name.slice(2)) : require(name);
-    new vm.Script(`(function(require, module, exports) { ${output}\n})`, { filename }).runInThisContext()(localRequire, module, module.exports);
-    return module.exports;
+    new vm.Script(`(function(require, module, exports) { ${output}\n})`, { filename }).runInThisContext()(localRequire, loadedModule, loadedModule.exports);
+    return loadedModule.exports;
   }
   return load;
 }
