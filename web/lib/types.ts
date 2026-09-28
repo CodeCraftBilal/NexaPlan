@@ -27,14 +27,18 @@ export interface Project {
   status: string;
   priority: string;
   workspaceId: string;
-  permissions?: { canManageContributors: boolean; canAddWorkspaceMembers: boolean };
+  permissions?: {
+    canManageContributors: boolean;
+    canAddWorkspaceMembers: boolean;
+  };
   workspace?: { name: string };
   members?: Member[];
   dueDate?: string | null;
   _count?: { tasks: number; members: number };
 }
 
-export type TaskStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "COMPLETED" | "BLOCKED" | "CANCELLED";
+export type TaskStatus =
+  "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "COMPLETED" | "BLOCKED" | "CANCELLED";
 export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 export interface Task {

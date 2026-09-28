@@ -29,8 +29,25 @@ export const useAuthStore = create<AuthState>((set) => ({
   sessionError: null,
   revision: 0,
   // Each explicit session change invalidates responses from an older session.
-  setUser: (user) => set((state) => ({ user, isAuthenticated: !!user, isLoading: false, isInitialized: true, sessionError: null, revision: state.revision + 1 })),
+  setUser: (user) =>
+    set((state) => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading: false,
+      isInitialized: true,
+      sessionError: null,
+      revision: state.revision + 1,
+    })),
   setLoading: (isLoading) => set({ isLoading, sessionError: null }),
-  setSessionError: (sessionError) => set({ sessionError, isLoading: false, isInitialized: true }),
-  logout: () => set((state) => ({ user: null, isAuthenticated: false, isLoading: false, isInitialized: true, sessionError: null, revision: state.revision + 1 })),
+  setSessionError: (sessionError) =>
+    set({ sessionError, isLoading: false, isInitialized: true }),
+  logout: () =>
+    set((state) => ({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      isInitialized: true,
+      sessionError: null,
+      revision: state.revision + 1,
+    })),
 }));

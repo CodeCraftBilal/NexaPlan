@@ -25,7 +25,7 @@ export default function LandingPage() {
       <header
         id="home"
         tabIndex={-1}
-        className="mx-auto flex min-h-24 flex-wrap py-5 max-w-[1280px] items-center justify-between gap-5 px-6 sm:px-10"
+        className="mx-auto flex min-h-24 flex-wrap py-5 max-w-[1920px] items-center justify-between gap-5 px-6 sm:px-10"
       >
         <Brand />
         <nav
@@ -53,7 +53,7 @@ export default function LandingPage() {
         </nav>
       </header>
       <main>
-        <section className="relative mx-auto grid max-w-[1280px] items-center gap-14 px-6 pb-20 pt-10 sm:px-10 sm:pt-16 lg:min-h-[650px] lg:grid-cols-[1fr_1.1fr] lg:gap-12 lg:pb-24">
+        <section className="relative mx-auto grid max-w-[1920px] items-center gap-14 px-6 pb-20 pt-10 sm:px-10 sm:pt-16 lg:min-h-[650px] lg:grid-cols-[1fr_1.1fr] lg:gap-12 lg:pb-24">
           <div className="page-enter relative z-10">
             <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-[10px] text-zinc-300">
               <span className="size-1.5 rounded-full bg-primary" />A clearer way
@@ -203,7 +203,7 @@ export default function LandingPage() {
           id="how-it-works"
           className="border-t border-border bg-[#151815]"
         >
-          <div className="mx-auto max-w-[1280px] px-6 py-16 sm:px-10">
+          <div className="mx-auto max-w-[1920px] px-6 py-16 sm:px-10">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="eyebrow mb-3 !text-primary">
@@ -261,7 +261,7 @@ export default function LandingPage() {
         </section>
         <section
           id="get-started"
-          className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-8 px-6 py-16 sm:px-10"
+          className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-8 px-6 py-16 sm:px-10"
         >
           <div className="flex items-center gap-4">
             <LayoutGrid className="hidden size-9 text-primary sm:block" />

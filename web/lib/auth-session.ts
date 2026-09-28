@@ -7,7 +7,12 @@ let pending: Promise<void> | null = null;
 export function isSessionUser(value: unknown): value is User {
   if (!value || typeof value !== "object") return false;
   const user = value as Partial<User>;
-  return typeof user.id === "string" && typeof user.email === "string" && typeof user.name === "string" && typeof user.role === "string";
+  return (
+    typeof user.id === "string" &&
+    typeof user.email === "string" &&
+    typeof user.name === "string" &&
+    typeof user.role === "string"
+  );
 }
 
 // React Strict Mode can initialize twice. Share the request and ignore any
@@ -26,10 +31,17 @@ export function initializeAuth(): Promise<void> {
       useAuthStore.getState().setUser(response.data.user);
     } catch (error) {
       if (useAuthStore.getState().revision !== revision) return;
-      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 404)) {
+      if (
+        axios.isAxiosError(error) &&
+        (error.response?.status === 401 || error.response?.status === 404)
+      ) {
         useAuthStore.getState().setUser(null);
       } else {
-        useAuthStore.getState().setSessionError("We couldn’t check your session. Make sure the server is running, then try again.");
+        useAuthStore
+          .getState()
+          .setSessionError(
+            "We couldn’t check your session. Make sure the server is running, then try again.",
+          );
       }
     } finally {
       pending = null;

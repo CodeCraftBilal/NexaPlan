@@ -9,18 +9,31 @@ export async function fetchWorkspaces() {
 
 export async function fetchProjects() {
   const workspaces = await fetchWorkspaces();
-  const groups = await Promise.all(workspaces.map(async (workspace) => {
-    const response = await api.get<ApiResponse<Project[]>>(`/projects/workspace/${workspace.id}`);
-    return response.data.data.map((project) => ({ ...project, workspace: { name: workspace.name } }));
-  }));
+  const groups = await Promise.all(
+    workspaces.map(async (workspace) => {
+      const response = await api.get<ApiResponse<Project[]>>(
+        `/projects/workspace/${workspace.id}`,
+      );
+      return response.data.data.map((project) => ({
+        ...project,
+        workspace: { name: workspace.name },
+      }));
+    }),
+  );
   return groups.flat();
 }
 
-export function errorMessage(error: unknown, fallback = "Something went wrong. Please try again.") {
+export function errorMessage(
+  error: unknown,
+  fallback = "Something went wrong. Please try again.",
+) {
   if (isAxiosError(error)) return error.response?.data?.message || fallback;
   return error instanceof Error ? error.message : fallback;
 }
 
 export function label(value: string) {
-  return value.toLowerCase().replaceAll("_", " ").replace(/^./, (char) => char.toUpperCase());
+  return value
+    .toLowerCase()
+    .replaceAll("_", " ")
+    .replace(/^./, (char) => char.toUpperCase());
 }
