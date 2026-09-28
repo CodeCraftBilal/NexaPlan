@@ -112,7 +112,7 @@ export default function ProjectTasks({ view }: { view: "board" | "list" }) {
             />
             <input
               aria-label="Search tasks"
-              className="field w-full !py-2 !pl-9 text-xs sm:w-64"
+              className="field w-full py-2! pl-9! text-xs sm:w-64"
               placeholder="Find a task…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -120,7 +120,7 @@ export default function ProjectTasks({ view }: { view: "board" | "list" }) {
           </div>
           <select
             aria-label="Filter by priority"
-            className="field !py-2 text-xs"
+            className="field py-2! text-xs"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
@@ -191,7 +191,7 @@ export default function ProjectTasks({ view }: { view: "board" | "list" }) {
                 return (
                   <section
                     key={status}
-                    className="w-[270px] rounded-2xl border border-border bg-[#151815] p-3"
+                    className="w-67.5 rounded-2xl border border-border bg-[#151815] p-3"
                   >
                     <div className="mb-4 flex items-center gap-2 px-1 pt-1">
                       <span
@@ -215,7 +215,7 @@ export default function ProjectTasks({ view }: { view: "board" | "list" }) {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`min-h-[200px] rounded-xl transition ${snapshot.isDraggingOver ? "bg-primary/5" : ""}`}
+                          className={`min-h-50 rounded-xl transition ${snapshot.isDraggingOver ? "bg-primary/5" : ""}`}
                         >
                           {column.map((task, index) => (
                             <Draggable

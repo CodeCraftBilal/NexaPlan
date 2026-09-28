@@ -46,14 +46,14 @@ export default function LandingPage() {
           </Link>
           <Link
             href={destination}
-            className="btn-primary !min-h-10 !px-4 !py-2.5 !text-sm"
+            className="btn-primary min-h-10! px-4! py-2.5! text-sm!"
           >
             Get started <ArrowUpRight className="size-3.5" />
           </Link>
         </nav>
       </header>
       <main>
-        <section className="relative mx-auto grid max-w-[1920px] items-center gap-14 px-6 pb-20 pt-10 sm:px-10 sm:pt-16 lg:min-h-[650px] lg:grid-cols-[1fr_1.1fr] lg:gap-12 lg:pb-24">
+        <section className="relative mx-auto grid max-w-[1920px] items-center gap-14 px-6 pb-20 pt-10 sm:px-10 sm:pt-16 lg:min-h-162.5 lg:grid-cols-[1fr_1.1fr] lg:gap-12 lg:pb-24">
           <div className="page-enter relative z-10">
             <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-[10px] text-zinc-300">
               <span className="size-1.5 rounded-full bg-primary" />A clearer way
@@ -72,7 +72,7 @@ export default function LandingPage() {
               thoughtful workspace with AI on your side.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-5">
-              <Link href={destination} className="btn-primary !px-6 !py-3.5">
+              <Link href={destination} className="btn-primary px-6! py-3.5!">
                 {authenticated
                   ? "Open your workspace"
                   : "Build something great"}
@@ -99,7 +99,7 @@ export default function LandingPage() {
           >
             <div className="landing-orbit absolute -inset-16 rounded-full border border-primary/5" />
             <div className="absolute -inset-7 rounded-full border border-primary/5" />
-            <div className="relative rounded-2xl border border-[#3b4431] bg-[#191d17] p-1.5 shadow-2xl shadow-black/40 lg:rotate-[-2deg]">
+            <div className="relative rounded-2xl border border-[#3b4431] bg-[#191d17] p-1.5 shadow-2xl shadow-black/40 lg:-rotate-2">
               <div className="flex items-center gap-1.5 border-b border-border px-4 py-3">
                 <span className="size-1.5 rounded-full bg-zinc-600" />
                 <span className="size-1.5 rounded-full bg-zinc-600" />
@@ -161,7 +161,7 @@ export default function LandingPage() {
                   ].map(([title, done]) => (
                     <div
                       key={String(title)}
-                      className="flex items-center gap-2.5 border-b border-white/[0.03] px-4 py-3"
+                      className="flex items-center gap-2.5 border-b border-white/3 px-4 py-3"
                     >
                       {done ? (
                         <span className="flex size-3.5 items-center justify-center rounded-full bg-primary/15 text-primary">
@@ -184,7 +184,7 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
-            <div className="relative -mt-4 ml-8 flex items-center gap-3 rounded-xl border border-primary/30 bg-[#27321e] px-4 py-3 shadow-xl sm:absolute sm:-bottom-6 sm:-left-5 sm:ml-0 sm:max-w-[310px] lg:rotate-[2deg]">
+            <div className="relative -mt-4 ml-8 flex items-center gap-3 rounded-xl border border-primary/30 bg-[#27321e] px-4 py-3 shadow-xl sm:absolute sm:-bottom-6 sm:-left-5 sm:ml-0 sm:max-w-77.5 lg:rotate-2">
               <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-[#27321e]">
                 <Sparkles className="size-4" />
               </span>
@@ -206,7 +206,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-[1920px] px-6 py-16 sm:px-10">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow mb-3 !text-primary">
+                <p className="eyebrow mb-3 text-primary!">
                   Built around your flow
                 </p>
                 <h2 className="text-3xl font-medium tracking-[-1px]">

@@ -95,7 +95,7 @@ export default function ProjectsPage() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search projects…"
-            className="field w-full !py-2 !pl-9 text-xs sm:w-60"
+            className="field w-full py-2! pl-9! text-xs sm:w-60"
           />
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function ProjectsPage() {
           ))}
           <Link
             href="/projects/new"
-            className="group flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border p-6 text-center transition hover:border-primary/50 hover:bg-primary/[.02]"
+            className="group flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border p-6 text-center transition hover:border-primary/50 hover:bg-primary/2"
           >
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full border border-border text-[#93998d] group-hover:text-primary">
               <Plus size={20} />

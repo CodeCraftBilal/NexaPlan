@@ -151,7 +151,7 @@ export default function MyTasksPage() {
                     aria-label="Search my tasks"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="field w-full !py-2 !pl-9 text-xs"
+                    className="field w-full py-2! pl-9! text-xs"
                     placeholder="Search tasks…"
                   />
                 </div>
@@ -159,7 +159,7 @@ export default function MyTasksPage() {
                   aria-label="Filter by priority"
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="field !py-2 text-xs"
+                  className="field py-2! text-xs"
                 >
                   <option value="ALL">All priorities</option>
                   {["URGENT", "HIGH", "MEDIUM", "LOW"].map((value) => (

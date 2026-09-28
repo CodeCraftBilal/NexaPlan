@@ -81,7 +81,7 @@ export default function AIAssistantPage() {
 
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-start justify-between flex-shrink-0">
+      <div className="flex items-start justify-between shrink-0">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
             <Sparkles className="w-8 h-8 text-indigo-400" />
@@ -90,7 +90,7 @@ export default function AIAssistantPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-1 border-b border-white/5 flex-shrink-0">
+      <div className="flex items-center gap-1 border-b border-white/5 shrink-0">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -118,10 +118,10 @@ export default function AIAssistantPage() {
               className={`flex gap-4 max-w-[80%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}
             >
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                   msg.role === "user"
                     ? "bg-indigo-600"
-                    : "bg-gradient-to-br from-indigo-500 to-fuchsia-600"
+                    : "bg-linear-to-br from-indigo-500 to-fuchsia-600"
                 }`}
               >
                 {msg.role === "user" ? (
@@ -150,7 +150,7 @@ export default function AIAssistantPage() {
 
           {isTyping && (
             <div className="flex gap-4 max-w-[80%]">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-fuchsia-600 flex items-center justify-center shrink-0">
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div className="p-4 rounded-2xl bg-white/5 border border-white/10 rounded-tl-sm flex gap-1 items-center">
@@ -162,7 +162,7 @@ export default function AIAssistantPage() {
           )}
         </div>
 
-        <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+        <div className="p-4 border-t border-white/5 bg-white/2">
           <div className="flex gap-2">
             <input
               type="text"

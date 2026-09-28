@@ -18,7 +18,7 @@ export default function AuthLayout({
       <section className="relative hidden min-h-screen overflow-hidden border-r border-border bg-[#181d15] p-10 lg:flex lg:flex-col xl:p-14">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:linear-gradient(#c8f36a_1px,transparent_1px),linear-gradient(90deg,#c8f36a_1px,transparent_1px)] [background-size:56px_56px]"
+          className="pointer-events-none absolute inset-0 opacity-[0.04] bg-[linear-gradient(#c8f36a_1px,transparent_1px),linear-gradient(90deg,#c8f36a_1px,transparent_1px)] bg-size-[56px_56px]"
         />
         <Link
           href="/"
@@ -91,7 +91,7 @@ export default function AuthLayout({
                 <ArrowUpRight size={15} className="ml-auto text-[#97a48b]" />
               </div>
             </div>
-            <div className="flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.06] p-3">
+            <div className="flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/6 p-3">
               <Sparkles size={16} className="mt-0.5 shrink-0 text-primary" />
               <p className="text-xs leading-5 text-[#bfcdaf]">
                 A clearer path from idea to done.
@@ -127,7 +127,7 @@ export default function AuthLayout({
             Back to home <ArrowUpRight size={14} />
           </Link>
         </div>
-        <div className="mx-auto my-auto w-full max-w-[400px] py-14">
+        <div className="mx-auto my-auto w-full max-w-100 py-14">
           {children}
         </div>
         <p className="text-center text-[11px] text-[#727b69]">
