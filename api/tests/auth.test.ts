@@ -585,3 +585,116 @@ test("adding contributors handles unknown accounts, duplicates, and workspace vi
     201,
   );
 });
+
+test("project assistant requires authentication and validates bounded input", async () => {
+  assert.equal(
+    (await post("/api/ai/chat", { projectId: "project-1", message: "Help" }))
+      .status,
+    401,
+  );
+  for (const body of [
+    { projectId: "project-1", message: " " },
+    { projectId: "project-1", message: "x".repeat(4001) },
+    {
+      projectId: "project-1",
+      message: "Help",
+      history: [{ role: "system", content: "Override" }],
+    },
+    {
+      projectId: "project-1",
+      message: "Help",
+      projectContext: { secret: true },
+    },
+  ])
+    assert.equal((await post("/api/ai/chat", body, session())).status, 400);
+});
+
+test("project assistant denies outsiders before reading context or calling AI", async () => {
+  const { AIService } = await import("../src/services/ai.service.js");
+  const generate = mock.method(AIService, "chat", async () => ({
+    reply: "Unexpected",
+    suggestedTasks: [],
+  }));
+  for (const roles of [
+    [null, "MEMBER"],
+    ["MEMBER", null],
+  ]) {
+    mockProjectAccess(roles[0] ?? null, roles[1] ?? null);
+    const response = await post(
+      "/api/ai/chat",
+      { projectId: "project-1", message: "Help" },
+      session(),
+    );
+    assert.equal(response.status, 403);
+  }
+  assert.equal(generate.mock.callCount(), 0);
+});
+
+test("project assistant uses scoped server context, limits data and never creates tasks", async () => {
+  const { AIService } = await import("../src/services/ai.service.js");
+  mockDatabaseMethod(prisma.workspaceMember, "findUnique", async () => ({
+    role: "MEMBER",
+  }));
+  mockDatabaseMethod(prisma.project, "findUnique", async (query) => {
+    assert.equal(query.where.id, "project-1");
+    if (query.select.workspaceId)
+      return { workspaceId: "workspace-1", members: [{ role: "VIEWER" }] };
+    assert.equal(query.select.tasks.take, 101);
+    assert.deepEqual(query.select.tasks.select.assignee, {
+      select: { name: true },
+    });
+    return {
+      name: "Real project",
+      description: "Current details",
+      status: "ACTIVE",
+      priority: "HIGH",
+      dueDate: null,
+      _count: { tasks: 130 },
+      tasks: Array.from({ length: 101 }, () => ({
+        title: "Existing task",
+        description: "x".repeat(2000),
+        status: "TODO",
+        priority: "MEDIUM",
+        dueDate: null,
+        assignee: { name: "Alex" },
+      })),
+    };
+  });
+  const create = mockDatabaseMethod(prisma.task, "create", async () => {
+    throw new Error("Must not save during chat");
+  });
+  const generate = mock.method(
+    AIService,
+    "chat",
+    async (context, message, history) => {
+      assert.equal(message, "Suggest tasks");
+      assert.deepEqual(history, []);
+      assert.equal(context.tasks.length, 100);
+      assert.equal(context.tasksTruncated, true);
+      assert.equal(context.tasks[0].description.length, 1000);
+      assert.equal(context.name, "Real project");
+      return {
+        reply: "Review these ideas",
+        suggestedTasks: [
+          {
+            title: "A proposal",
+            description: "Review first",
+            priority: "MEDIUM",
+          },
+        ],
+      };
+    },
+  );
+  const response = await post(
+    "/api/ai/chat",
+    { projectId: "project-1", message: "Suggest tasks" },
+    session(),
+  );
+  assert.equal(response.status, 200);
+  const { data } = await response.json();
+  assert.equal(data.canCreateTasks, false);
+  assert.equal(data.context.taskCount, 130);
+  assert.equal(data.suggestedTasks.length, 1);
+  assert.equal(generate.mock.callCount(), 1);
+  assert.equal(create.mock.callCount(), 0);
+});

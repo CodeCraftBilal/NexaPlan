@@ -109,6 +109,8 @@ All domain routes are prefixed with `/api`. Auth register/login/logout and healt
 
 There is no global `GET /api/projects`, general task/project update/delete route, or comments/notifications/invitations API. Unknown routes and unsupported method/path combinations fall through to JSON `404`.
 
+`POST /api/ai/chat` accepts `{ projectId, message, history? }` and returns authorized project chat and reviewable task proposals (details below).
+
 ### Responses and validation
 
 Domain success responses normally use `{ success: true, message, data }`. Register/login/me instead use `{ success: true, user: { id, name, email, role, avatar } }`; they do not return password hashes or a token property. Logout returns `{ success: true, message }`.
@@ -161,7 +163,11 @@ Project start/due dates and status/priority editing, task dates/tags/estimates/p
 
 [AIService](src/services/ai.service.ts) owns shared prompts and delegates text generation through the `AIProvider` interface to [OpenAIService](src/services/openai.service.ts) or [GeminiService](src/services/gemini.service.ts). OpenAI uses native fetch with the [Responses API](https://developers.openai.com/api/docs/guides/text); Gemini uses `@google/genai`. Both initialize on demand. Plan generation requests phases/tasks as Markdown; risk analysis serializes submitted context into the prompt. Neither operation persists an insight or creates tasks.
 
-Both endpoints require a session but do not perform project-specific authorization or load authoritative project context from the database. Before extending project-aware AI, obtain authorized server-side context, validate input, limit data sent to the provider, and retain user review before applying generated changes. The frontend assistant is currently a mock and calls neither endpoint. Chat, summaries, prioritization, next actions, and accepting generated plans are not implemented.
+The legacy plan and risk endpoints require a session and accept submitted context; the frontend instead uses `POST /api/ai/chat`. [ProjectAssistantService](src/services/project-assistant.service.ts) enforces workspace/project read access before loading context or calling the provider. It selects project name, description, status, priority, due date, task count, and up to 100 recent tasks (title, bounded description, status, priority, due date, and assignee name). It excludes emails and credentials. The prompt includes the snapshot date and explicitly marks truncated task lists.
+
+Chat accepts `{ projectId, message, history? }`: message is 1?4,000 trimmed characters; history is at most 10 user/assistant messages of 1?4,000 characters. Unknown request fields are rejected. The response envelope contains `{ reply, suggestedTasks, canCreateTasks, context: { taskCount, includedTasks, asOf } }`. Provider JSON is validated: up to 8 task proposals with title, description and a valid priority; malformed output returns `502`. Prompt guidance distinguishes project facts from proposals and treats context/history as untrusted data.
+
+Chat never writes data. The frontend reviews proposals using the existing task creation route, which rechecks project write access. Viewers may chat but cannot save proposals. Conversation history and proposal state are not persisted. Existing task edits/deletions, automatic assignment and bulk acceptance are not implemented.
 
 Socket.IO authenticates via cookie or `handshake.auth.token`. It accepts:
 

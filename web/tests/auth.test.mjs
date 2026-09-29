@@ -262,3 +262,38 @@ test("proxy preserves the intended route and allows stale-cookie sign-in", () =>
   );
   assert.equal(stale.headers.get("location"), null);
 });
+
+test("project assistant requests bound history, preserve session guards and allow AI latency", async () => {
+  const { load, api } = setup();
+  const { askProjectAssistant } = load("lib/project-assistant");
+  const controller = new AbortController();
+  const expected = {
+    reply: "Plan",
+    suggestedTasks: [],
+    canCreateTasks: true,
+    context: { taskCount: 0, includedTasks: 0, asOf: "2026-09-29" },
+  };
+  api.defaults.adapter = async (config) => {
+    assert.equal(config.url, "/ai/chat");
+    assert.equal(config.timeout, 75000);
+    assert.equal(config.signal, controller.signal);
+    assert.equal(typeof config.sessionRevision, "number");
+    const body = JSON.parse(config.data);
+    assert.equal(body.projectId, "project-1");
+    assert.equal(body.history.length, 10);
+    assert.equal(body.history[0].content.length, 4000);
+    assert.deepEqual(Object.keys(body.history[0]), ["role", "content"]);
+    return reply(config, { success: true, data: expected });
+  };
+  const result = await askProjectAssistant(
+    "project-1",
+    "Help",
+    Array.from({ length: 15 }, () => ({
+      role: "user",
+      content: "x".repeat(5000),
+      result: { secret: "not sent" },
+    })),
+    controller.signal,
+  );
+  assert.deepEqual(result, expected);
+});

@@ -18,7 +18,7 @@ Browser -> Next.js :3000 -> /api/* rewrite -> Express :5000 -> PostgreSQL
 
 - Next.js 16.2.9 App Router, React 19.2.4, strict TypeScript, Tailwind CSS 4.
 - Axios handles HTTP; Zustand holds in-memory authentication state.
-- `@hello-pangea/dnd` supports the task board; Lucide provides icons; `react-markdown` renders the mock assistant's messages.
+- `@hello-pangea/dnd` supports the task board; Lucide provides icons; `react-markdown` renders the assistant's Markdown messages.
 - The browser uses relative `/api` URLs. [next.config.ts](next.config.ts) forwards them to the API server. There are no Next.js API route handlers or frontend database connections.
 - API types in [lib/types.ts](lib/types.ts) are maintained manually. There is no shared generated contract package.
 
@@ -67,7 +67,7 @@ Route groups `(auth)` and `(dashboard)` organize layouts without appearing in UR
 | `/projects/[projectId]/tasks`        | Task list with search, priority filtering, creation, and status changes.                              |
 | `/projects/[projectId]/board`        | Six status columns, drag between columns, status selectors, task creation.                            |
 | `/projects/[projectId]/contributors` | List contributors and add registered users by email with API-provided permission flags.               |
-| `/projects/[projectId]/ai`           | **Mock UI**: hard-coded project context and delayed canned responses; no API request.                 |
+| `/projects/[projectId]/ai`           | Live project chat, quick prompts, and editable task suggestions with explicit creation.               |
 | `/my-tasks`                          | Assigned tasks plus tasks created by the user that remain unassigned, limited to accessible projects. |
 
 `/tasks`, `/settings`, and `/notifications` appear in route protection rules but have no corresponding pages. Password reset, profile, admin, comments, activity, invitation acceptance, and notification flows are not implemented. Schema fields and installed libraries do not imply a working feature.
@@ -114,7 +114,8 @@ Authentication responses differ from domain responses: workspace/project/task en
 - Status values are `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `COMPLETED`, `BLOCKED`, `CANCELLED`; priorities are `LOW`, `MEDIUM`, `HIGH`, `URGENT`.
 - Board status changes are optimistic and restore the previous status on failure. Dragging within a column does not persist ordering.
 - The API emits Socket.IO task events, but this frontend does not connect or subscribe. `socket.io-client` is installed only; there is no live multi-user refresh.
-- The assistant page is a prototype. The backend's real plan and risk endpoints are not connected to it, and generated plans do not create tasks.
+- The assistant calls `POST /ai/chat` through [lib/project-assistant.ts](lib/project-assistant.ts), using the shared API client with a 75-second request timeout and cancellation on unmount. The backend loads authorized current context for every message. The latest 10 conversation messages are sent (up to 4,000 characters each); conversation state is local to the project page and resets on navigation/reload.
+- AI suggestions are displayed separately from existing tasks. ?Review and create? prefills the shared `TaskComposer`; only its explicit ?Create task? action calls the existing task endpoint. Saved/dismissed proposals are marked locally; cancellation leaves a proposal available. Viewers can chat but cannot create tasks. Errors retain input and offer retry. No AI operation edits or deletes existing tasks.
 
 ## Commands and verification
 
@@ -139,7 +140,7 @@ After code changes, run `npm run format` and `npx tsc --noEmit`; run relevant te
 - A `403` can be correct: workspace membership, project membership, and roles are checked independently. Do not bypass these checks to make a screen load.
 - Task controls are not comprehensively hidden for viewers; the API rejects unauthorized writes.
 - Production uses secure cookies and requires HTTPS. Preserve same-origin `/api` forwarding; the existing rewrite does not proxy Socket.IO's `/socket.io` transport.
-- Planned requirements include richer task editing, due dates, comments, activity, notifications, invitations, AI review/acceptance, and administration. Consult the requirements and current API before implementing them.
+- Planned requirements include richer task editing, due dates, comments, activity, notifications, invitations, AI edits to existing tasks, and administration. Consult the requirements and current API before implementing them.
 
 ## Keeping this context current
 

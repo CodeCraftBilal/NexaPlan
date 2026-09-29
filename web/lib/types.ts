@@ -41,6 +41,24 @@ export type TaskStatus =
   "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "COMPLETED" | "BLOCKED" | "CANCELLED";
 export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
+export interface SuggestedTask {
+  title: string;
+  description: string;
+  priority: Priority;
+}
+
+export interface AssistantMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface AssistantResponse {
+  reply: string;
+  suggestedTasks: SuggestedTask[];
+  canCreateTasks: boolean;
+  context: { taskCount: number; includedTasks: number; asOf: string };
+}
+
 export interface Task {
   id: string;
   title: string;

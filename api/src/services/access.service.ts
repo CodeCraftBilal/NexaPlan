@@ -50,6 +50,11 @@ export async function requireProjectAccess(
   }
   return {
     ...project,
+    canEditProject:
+      managesWorkspace ||
+      (Boolean(projectMember) &&
+        projectMember?.role !== "VIEWER" &&
+        workspaceMember.role !== "VIEWER"),
     canManageContributors:
       managesWorkspace ||
       (projectMember?.role === "MANAGER" && workspaceMember.role !== "VIEWER"),

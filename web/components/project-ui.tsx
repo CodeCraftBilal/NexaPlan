@@ -27,6 +27,7 @@ import type {
   Task,
   TaskStatus,
   Priority,
+  SuggestedTask,
 } from "@/lib/types";
 
 export const statuses: TaskStatus[] = [
@@ -284,17 +285,23 @@ export function useProject(projectId: string) {
 export function TaskComposer({
   project,
   initialStatus = "TODO",
+  initialValues,
   onCreated,
   onClose,
 }: {
   project: Project;
   initialStatus?: TaskStatus;
+  initialValues?: SuggestedTask;
   onCreated: (task: Task) => void;
   onClose: () => void;
 }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<Priority>("MEDIUM");
+  const [title, setTitle] = useState(initialValues?.title ?? "");
+  const [description, setDescription] = useState(
+    initialValues?.description ?? "",
+  );
+  const [priority, setPriority] = useState<Priority>(
+    initialValues?.priority ?? "MEDIUM",
+  );
   const [assigneeId, setAssigneeId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -351,7 +358,7 @@ export function TaskComposer({
           autoFocus
           id="task-title"
           required
-          maxLength={200}
+          maxLength={250}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="field w-full"

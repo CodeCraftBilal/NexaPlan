@@ -3,9 +3,24 @@ import { authenticate } from "../middleware/auth.js";
 import type { AuthRequest } from "../middleware/auth.js";
 import { sendResponse } from "../utils/apiResponse.js";
 import { AIService } from "../services/ai.service.js";
+import { ProjectAssistantService } from "../services/project-assistant.service.js";
+import { assistantRequestSchema } from "../utils/validation.js";
 
 const router = Router();
 router.use(authenticate);
+
+router.post("/chat", async (req: AuthRequest, res, next) => {
+  try {
+    const result = await ProjectAssistantService.chat(
+      req.user!.id,
+      assistantRequestSchema.parse(req.body),
+    );
+    res.setHeader("Cache-Control", "no-store");
+    sendResponse(res, 200, true, "Assistant response generated", result);
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.post("/project-plan", async (req: AuthRequest, res, next) => {
   try {

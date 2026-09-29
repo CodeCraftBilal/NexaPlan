@@ -1,187 +1,296 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import {
-  LayoutDashboard,
-  CheckSquare,
-  KanbanSquare,
-  Sparkles,
-  Send,
-  Bot,
-  User,
-} from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { Sparkles, Send } from "lucide-react";
+import {
+  ErrorState,
+  LoadingState,
+  ProjectHeader,
+  TaskComposer,
+  useProject,
+} from "@/components/project-ui";
+import { askProjectAssistant } from "@/lib/project-assistant";
+import { errorMessage } from "@/lib/project-data";
+import type {
+  AssistantMessage,
+  AssistantResponse,
+  SuggestedTask,
+} from "@/lib/types";
+
+type Message = AssistantMessage & { id: string; result?: AssistantResponse };
+type Review = { id: string; task: SuggestedTask };
+const prompts = [
+  "Summarize project progress",
+  "What should we work on next?",
+  "Identify risks and bottlenecks",
+  "Suggest tasks to organize this project",
+];
 
 export default function AIAssistantPage() {
-  const params = useParams();
-  const projectId = params.projectId;
+  const { projectId } = useParams<{ projectId: string }>();
+  return <ProjectAssistant key={projectId} projectId={projectId} />;
+}
 
+function ProjectAssistant({ projectId }: { projectId: string }) {
+  const { project, tasks, setTasks, loading, error, retry } =
+    useProject(projectId);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      role: "assistant",
-      content:
-        "Hello! I'm your AI Project Assistant. I've analyzed your project 'Web App Refactor'.\n\nI can help you:\n- Summarize project progress\n- Detect risks and bottlenecks\n- Generate new tasks\n- Prioritize your backlog\n\nHow can I help you today?",
+  const [busy, setBusy] = useState(false);
+  const [requestError, setRequestError] = useState("");
+  const [failedMessage, setFailedMessage] = useState("");
+  const [review, setReview] = useState<Review | null>(null);
+  const [resolved, setResolved] = useState<Record<string, string>>({});
+  const active = useRef<AbortController | null>(null);
+  const bottom = useRef<HTMLDivElement>(null);
+  useEffect(
+    () => () => {
+      active.current?.abort();
     },
-  ]);
+    [],
+  );
+  useEffect(() => {
+    bottom.current?.scrollIntoView({ block: "nearest" });
+  }, [messages, busy]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-
-    const newMsg = { id: Date.now(), role: "user", content: input };
-    setMessages((prev) => [...prev, newMsg]);
-    setInput("");
-    setIsTyping(true);
-
-    // Mock AI Response
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
+  async function send(text: string) {
+    const message = text.trim();
+    if (!message || active.current || message.length > 4000) return;
+    const controller = new AbortController();
+    active.current = controller;
+    setBusy(true);
+    setRequestError("");
+    setFailedMessage("");
+    try {
+      const result = await askProjectAssistant(
+        projectId,
+        message,
+        messages,
+        controller.signal,
+      );
+      if (controller.signal.aborted) return;
+      setMessages((previous) => [
+        ...previous,
+        { id: crypto.randomUUID(), role: "user", content: message },
         {
-          id: Date.now() + 1,
+          id: crypto.randomUUID(),
           role: "assistant",
-          content:
-            "Based on the current project status, here is a risk analysis:\n\n**High Risk**: Authentication module is blocked.\n\nI suggest prioritizing the 'Fix OAuth callback' task. Would you like me to create subtasks for this?",
+          content: result.reply,
+          result,
         },
       ]);
-      setIsTyping(false);
-    }, 1500);
-  };
+      setInput("");
+    } catch (failure) {
+      if (controller.signal.aborted) return;
+      setRequestError(
+        errorMessage(
+          failure,
+          "The assistant couldn't respond. Please try again.",
+        ),
+      );
+      setFailedMessage(message);
+    } finally {
+      if (!controller.signal.aborted) {
+        active.current = null;
+        setBusy(false);
+      }
+    }
+  }
 
-  const tabs = [
-    {
-      name: "Overview",
-      href: `/projects/${projectId}`,
-      icon: LayoutDashboard,
-      active: false,
-    },
-    {
-      name: "List",
-      href: `/projects/${projectId}/tasks`,
-      icon: CheckSquare,
-      active: false,
-    },
-    {
-      name: "Board",
-      href: `/projects/${projectId}/board`,
-      icon: KanbanSquare,
-      active: false,
-    },
-    {
-      name: "AI Assistant",
-      href: `/projects/${projectId}/ai`,
-      icon: Sparkles,
-      active: true,
-    },
-  ];
+  if (loading) return <LoadingState />;
+  if (error || !project)
+    return (
+      <ErrorState message={error || "Project not found."} onRetry={retry} />
+    );
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-start justify-between shrink-0">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-indigo-400" />
-            AI Assistant
-          </h1>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-1 border-b border-white/5 shrink-0">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <Link
-              key={tab.name}
-              href={tab.href}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors ${
-                tab.active
-                  ? "border-indigo-500 text-indigo-400"
-                  : "border-transparent text-slate-400 hover:text-slate-200 hover:border-white/10"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.name}
-            </Link>
-          );
-        })}
-      </div>
-
-      <div className="flex-1 glass-card rounded-2xl flex flex-col overflow-hidden border-indigo-500/20">
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-4 max-w-[80%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}
-            >
-              <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                  msg.role === "user"
-                    ? "bg-indigo-600"
-                    : "bg-linear-to-br from-indigo-500 to-fuchsia-600"
-                }`}
-              >
-                {msg.role === "user" ? (
-                  <User className="w-4 h-4 text-white" />
-                ) : (
-                  <Bot className="w-4 h-4 text-white" />
-                )}
-              </div>
-              <div
-                className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-indigo-600 text-white rounded-tr-sm"
-                    : "bg-white/5 border border-white/10 text-slate-200 rounded-tl-sm"
-                }`}
-              >
-                {msg.role === "assistant" ? (
-                  <div className="prose prose-invert prose-sm max-w-none">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                ) : (
-                  msg.content
-                )}
-              </div>
-            </div>
-          ))}
-
-          {isTyping && (
-            <div className="flex gap-4 max-w-[80%]">
-              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-fuchsia-600 flex items-center justify-center shrink-0">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 rounded-tl-sm flex gap-1 items-center">
-                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="p-4 border-t border-white/5 bg-white/2">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask the AI assistant anything about this project..."
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-            />
+    <div className="mx-auto max-w-5xl space-y-6">
+      <ProjectHeader project={project} />
+      <section className="panel p-5 sm:p-6">
+        <h2 className="flex items-center gap-2 text-xl font-semibold">
+          <Sparkles size={21} className="text-primary" />
+          Project assistant
+        </h2>
+        <p className="mt-2 text-sm text-[#93998d]">
+          Plan work, prioritize tasks, and explore risks using the latest data
+          from {project.name}. Review suggestions before saving. This
+          conversation lasts until you leave or reload this page.
+        </p>
+        <p className="mt-2 text-sm text-[#93998d]">
+          {tasks.length} tasks in this project. Each message shares project
+          details and up to 100 recent tasks with your configured AI provider.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {prompts.map((prompt) => (
             <button
-              onClick={handleSend}
-              disabled={!input.trim() || isTyping}
-              className="px-4 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center justify-center"
+              key={prompt}
+              className="btn-secondary"
+              disabled={busy}
+              onClick={() => {
+                setInput(prompt);
+                void send(prompt);
+              }}
             >
-              <Send className="w-5 h-5" />
+              {prompt}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section aria-label="Project conversation" className="panel p-5 sm:p-6">
+        <div
+          role="log"
+          aria-live="polite"
+          aria-busy={busy}
+          className="max-h-[60vh] space-y-6 overflow-y-auto break-words"
+        >
+          {messages.length === 0 && (
+            <p className="py-8 text-center text-[#93998d]">
+              Ask a question or choose a prompt to get started. No project
+              changes are made by chatting.
+            </p>
+          )}
+          {messages.map((message) => (
+            <article
+              key={message.id}
+              className="rounded-xl border border-border p-4"
+            >
+              <p className="mb-3 text-sm font-semibold text-primary">
+                {message.role === "user" ? "You" : "Project assistant"}
+              </p>
+              <div className="space-y-3 text-sm leading-7 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_pre]:overflow-x-auto [&_a]:underline">
+                <ReactMarkdown components={{ img: () => null }}>
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+              {message.result && (
+                <p className="mt-3 text-xs text-[#93998d]">
+                  Based on {message.result.context.includedTasks} of{" "}
+                  {message.result.context.taskCount} tasks at{" "}
+                  {new Date(message.result.context.asOf).toLocaleTimeString()}.
+                </p>
+              )}
+              {message.result?.suggestedTasks.map((task, index) => {
+                const id = `${message.id}-${index}`;
+                return (
+                  <div
+                    key={id}
+                    className="mt-4 rounded-lg border border-border p-4"
+                  >
+                    <p className="font-medium">{task.title}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-[#93998d]">
+                      {task.description}
+                    </p>
+                    <p className="my-2 text-xs text-[#93998d]">
+                      Suggested priority: {task.priority}
+                    </p>
+                    {resolved[id] ? (
+                      <p role="status" className="text-sm text-primary">
+                        {resolved[id]}
+                      </p>
+                    ) : (
+                      <div className="flex flex-wrap gap-3">
+                        {message.result?.canCreateTasks ? (
+                          <button
+                            className="btn-primary"
+                            disabled={review !== null}
+                            onClick={() => setReview({ id, task })}
+                          >
+                            Review and create
+                          </button>
+                        ) : (
+                          <p className="text-sm text-[#93998d]">
+                            You have read-only access. Ask a project editor to
+                            create this task.
+                          </p>
+                        )}
+                        <button
+                          className="btn-secondary"
+                          disabled={review !== null}
+                          onClick={() =>
+                            setResolved((previous) => ({
+                              ...previous,
+                              [id]: "Dismissed",
+                            }))
+                          }
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </article>
+          ))}
+          {busy && (
+            <p role="status" className="text-sm text-primary">
+              Reviewing your project: {input || failedMessage}
+            </p>
+          )}
+          <div ref={bottom} />
+        </div>
+        {requestError && (
+          <div className="mt-4">
+            <ErrorState
+              message={requestError}
+              onRetry={() => void send(failedMessage)}
+            />
+          </div>
+        )}
+        <form
+          className="mt-6 space-y-3 border-t border-border pt-5"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void send(input);
+          }}
+        >
+          <label
+            htmlFor="assistant-message"
+            className="block text-sm font-medium"
+          >
+            Ask about this project
+          </label>
+          <textarea
+            id="assistant-message"
+            className="field w-full resize-y"
+            rows={3}
+            maxLength={4000}
+            value={input}
+            disabled={busy}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="Help me break the next milestone into tasks..."
+          />
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-[#93998d]">
+              AI suggestions can be mistaken. Review the details.
+            </span>
+            <button className="btn-primary" disabled={busy || !input.trim()}>
+              <Send size={16} />
+              {busy ? "Thinking..." : "Send"}
             </button>
           </div>
-        </div>
-      </div>
+        </form>
+      </section>
+      {review && (
+        <section aria-label="Review suggested task">
+          <TaskComposer
+            key={review.id}
+            project={project}
+            initialValues={review.task}
+            onClose={() => setReview(null)}
+            onCreated={(task) => {
+              setTasks((previous) => [task, ...previous]);
+              setResolved((previous) => ({
+                ...previous,
+                [review.id]: "Task created",
+              }));
+            }}
+          />
+        </section>
+      )}
     </div>
   );
 }

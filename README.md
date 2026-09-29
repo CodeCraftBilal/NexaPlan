@@ -4,7 +4,7 @@
 
 ProjectAI brings project overviews, a task list, a drag-and-drop board, and contributor management into one web application. Core project management works independently of AI configuration.
 
-The project is under active development. The main management flows are connected to the backend; the in-app AI assistant is currently a demo interface. Two separate backend endpoints support real OpenAI- or Gemini-powered plan generation and risk analysis.
+The project is under active development. The main management flows are connected to the backend; the in-app AI assistant uses OpenAI or Gemini to answer project questions and suggest tasks for review. It reads current project data through an authorized backend endpoint.
 
 ## What you can do today
 
@@ -30,6 +30,7 @@ Task assignment is available when creating a task. General task editing, reassig
 3. Have teammates register, then add them as project contributors using their email addresses.
 4. Add tasks, choose priorities, and optionally assign contributors.
 5. Update statuses through the task list or board, and follow progress in the project overview and your dashboard.
+6. Open a project?s AI assistant to organize work, ask questions, and review suggested tasks before creating them.
 
 Access is scoped by workspace and project membership. Workspace owners/managers can manage contributors across their workspace; project managers have a narrower scope. See the [API permission reference](api/README.md#authentication-and-access-rules) for the exact current rules.
 
@@ -38,9 +39,9 @@ Access is scoped by workspace and project membership. Workspace owners/managers 
 AI is intended to assist users with planning and analysis while users retain control over changes.
 
 - **Available in the API:** project-plan generation and risk analysis using OpenAI or Gemini, enabled by an optional API key. These return text and do not create tasks or save insights.
-- **Demo in the website:** the project AI assistant displays canned messages. It is not connected to an AI provider or live project data.
+- **Available in the website:** the project AI assistant answers questions about progress, priorities, workload and risks using current project details and up to 100 recent tasks. Suggested tasks can be edited, dismissed or created individually after review. Conversations are kept only while the page is open.
 - **Backend foundation:** Socket.IO supports authenticated rooms and task events. The website does not yet subscribe, so changes from another user do not appear through live updates.
-- **Planned:** integrated AI review and acceptance, richer task editing and due dates, subtasks, comments, activity history, notifications, invitation acceptance, password reset, and administration.
+- **Planned:** AI edits to existing tasks, richer task editing and due dates, subtasks, comments, activity history, notifications, invitation acceptance, password reset, and administration.
 
 The [product requirements](project_requirements.md) describe the broader intended product. They include planned features; the package READMEs document what is implemented.
 

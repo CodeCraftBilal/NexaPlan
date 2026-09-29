@@ -58,3 +58,36 @@ export const taskSchema = z.object({
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
   status: taskStatus.optional(),
 });
+
+export const assistantRequestSchema = z
+  .object({
+    projectId: z.string().trim().min(1).max(100),
+    message: z.string().trim().min(1).max(4000),
+    history: z
+      .array(
+        z.object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string().trim().min(1).max(4000),
+        }),
+      )
+      .max(10)
+      .default([]),
+  })
+  .strict();
+
+export const assistantResponseSchema = z
+  .object({
+    reply: z.string().trim().min(1).max(12000),
+    suggestedTasks: z
+      .array(
+        taskSchema
+          .pick({ title: true, description: true, priority: true })
+          .extend({
+            description: z.string().trim().max(4000),
+            priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
+          })
+          .strict(),
+      )
+      .max(8),
+  })
+  .strict();

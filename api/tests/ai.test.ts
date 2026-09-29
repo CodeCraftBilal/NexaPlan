@@ -11,6 +11,7 @@ const { env } = await import("../src/config/env.js");
 const { AIService } = await import("../src/services/ai.service.js");
 const { OpenAIService } = await import("../src/services/openai.service.js");
 const { GeminiService } = await import("../src/services/gemini.service.js");
+env.AI_PROVIDER = undefined;
 const initial = { ...env };
 afterEach(() => {
   mock.restoreAll();
@@ -113,4 +114,35 @@ test("OpenAI rejects failed, incomplete, malformed and empty responses safely", 
   await assert.rejects(OpenAIService.generateText("prompt"), {
     statusCode: 502,
   });
+});
+
+test("assistant validates AI task proposals before returning them", async () => {
+  const valid = {
+    reply: "A plan",
+    suggestedTasks: [
+      {
+        title: "Review scope",
+        description: "Agree on goals",
+        priority: "HIGH",
+      },
+    ],
+  };
+  mock.method(GeminiService, "generateText", async () => JSON.stringify(valid));
+  assert.deepEqual(
+    await AIService.chat({ name: "Project" }, "Plan", []),
+    valid,
+  );
+  mock.restoreAll();
+  for (const raw of [
+    "not json",
+    JSON.stringify({
+      reply: "Bad",
+      suggestedTasks: [{ title: "Task", description: "", priority: "INVALID" }],
+    }),
+    JSON.stringify({ ...valid, deleteTasks: true }),
+  ]) {
+    mock.method(GeminiService, "generateText", async () => raw);
+    await assert.rejects(AIService.chat({}, "Plan", []), { statusCode: 502 });
+    mock.restoreAll();
+  }
 });
