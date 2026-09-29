@@ -214,8 +214,8 @@ export default function WorkspacesPage() {
           ))}
         </div>
       )}
-      <div className="flex items-center gap-2 text-sm text-[#686e65]">
-        <Building2 size={14} />
+      <div className="flex items-center gap-2 text-lg text-[#b8c2b3]">
+        <Building2 size={18} />
         One space for your people, projects, and possibilities.
       </div>
     </div>

@@ -69,12 +69,13 @@ Start `web/` separately. Visit `http://localhost:5000/health` for a process heal
 | `NODE_ENV`       | `development`            | `development`, `production`, or `test`; production enables secure cookies.                                |
 | `GEMINI_API_KEY` | Optional                 | Enables Gemini calls. Missing, empty, or example placeholder values result in a `503` from AI operations. |
 
-Set `AI_PROVIDER=openai` or `AI_PROVIDER=gemini` in `api/.env` and restart the API to switch providers. If omitted, a non-placeholder `OPENAI_API_KEY` selects OpenAI; otherwise Gemini is selected. There is no automatic fallback after provider errors.
+Set `AI_PROVIDER=openai`, `AI_PROVIDER=gemini`, or `AI_PROVIDER=rapid` in `api/.env` and restart the API to switch providers. If omitted, a non-placeholder `OPENAI_API_KEY` selects OpenAI; otherwise Gemini is selected. There is no automatic fallback after provider errors.
 
 | Variable         | Required/default   | Purpose                                                                           |
 | ---------------- | ------------------ | --------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY` | Optional           | Enables OpenAI calls; missing, blank, or example keys return `503` when selected. |
-| `AI_PROVIDER`    | Optional           | `openai` or `gemini`; explicit selection overrides key-based selection.           |
+| `RAPID_API_KEY`  | Optional           | Enables Rapid API calls (e.g., chatgpt-42); requires `AI_PROVIDER=rapid`.         |
+| `AI_PROVIDER`    | Optional           | `openai`, `gemini`, or `rapid`; explicit selection overrides key-based selection.           |
 | `OPENAI_MODEL`   | `gpt-4.1-mini`     | OpenAI model ID; configurable according to account access.                        |
 | `GEMINI_MODEL`   | `gemini-2.5-flash` | Gemini model ID.                                                                  |
 

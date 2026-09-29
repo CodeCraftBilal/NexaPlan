@@ -113,7 +113,7 @@ function ProjectAssistant({ projectId }: { projectId: string }) {
           <Sparkles size={21} className="text-primary" />
           Project assistant
         </h2>
-        <p className="mt-2 text-sm text-[#93998d]">
+        <p className="mt-2 text-md text-[#93998d]">
           Plan work, prioritize tasks, and explore risks using the latest data
           from {project.name}. Review suggestions before saving. This
           conversation lasts until you leave or reload this page.
@@ -144,7 +144,7 @@ function ProjectAssistant({ projectId }: { projectId: string }) {
           role="log"
           aria-live="polite"
           aria-busy={busy}
-          className="max-h-[60vh] space-y-6 overflow-y-auto break-words"
+          className="max-h-[60vh] space-y-6 overflow-y-auto wrap-break-word"
         >
           {messages.length === 0 && (
             <p className="py-8 text-center text-[#93998d]">
@@ -166,7 +166,7 @@ function ProjectAssistant({ projectId }: { projectId: string }) {
                 </ReactMarkdown>
               </div>
               {message.result && (
-                <p className="mt-3 text-xs text-[#93998d]">
+                <p className="mt-3 text-sm text-[#93998d]">
                   Based on {message.result.context.includedTasks} of{" "}
                   {message.result.context.taskCount} tasks at{" "}
                   {new Date(message.result.context.asOf).toLocaleTimeString()}.
@@ -180,10 +180,10 @@ function ProjectAssistant({ projectId }: { projectId: string }) {
                     className="mt-4 rounded-lg border border-border p-4"
                   >
                     <p className="font-medium">{task.title}</p>
-                    <p className="mt-1 whitespace-pre-wrap text-sm text-[#93998d]">
+                    <p className="mt-1 whitespace-pre-wrap text-md text-[#93998d]">
                       {task.description}
                     </p>
-                    <p className="my-2 text-xs text-[#93998d]">
+                    <p className="my-2 text-sm text-[#93998d]">
                       Suggested priority: {task.priority}
                     </p>
                     {resolved[id] ? (
@@ -255,7 +255,7 @@ function ProjectAssistant({ projectId }: { projectId: string }) {
           </label>
           <textarea
             id="assistant-message"
-            className="field w-full resize-y"
+            className="field w-full resize-y text-lg"
             rows={3}
             maxLength={4000}
             value={input}
@@ -264,7 +264,7 @@ function ProjectAssistant({ projectId }: { projectId: string }) {
             placeholder="Help me break the next milestone into tasks..."
           />
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-[#93998d]">
+            <span className="text-sm text-[#93998d]">
               AI suggestions can be mistaken. Review the details.
             </span>
             <button className="btn-primary" disabled={busy || !input.trim()}>

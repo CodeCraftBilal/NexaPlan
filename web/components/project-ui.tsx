@@ -211,7 +211,7 @@ export function ProjectHeader({
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {project.name}
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#93998d]">
+          <p className="mt-3 max-w-2xl text-md leading-6 text-[#93998d]">
             {project.description ||
               "Bring your team, tasks, and ideas together."}
           </p>
@@ -227,7 +227,7 @@ export function ProjectHeader({
             key={tab.href}
             href={tab.href}
             aria-current={pathname === tab.href ? "page" : undefined}
-            className={`flex shrink-0 items-center gap-2 border-b-2 pb-4 text-sm transition ${pathname === tab.href ? "border-primary text-primary" : "border-transparent text-[#93998d] hover:text-foreground"}`}
+            className={`flex shrink-0 items-center gap-2 border-b-2 pb-4 text-md transition ${pathname === tab.href ? "border-primary text-primary" : "border-transparent text-[#93998d] hover:text-foreground"}`}
           >
             <tab.icon size={16} />
             {tab.label}

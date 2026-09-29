@@ -43,11 +43,9 @@ export const authenticate = (
     next();
   } catch {
     res.clearCookie("token", sessionCookieOptions);
-    res
-      .status(401)
-      .json({
-        success: false,
-        message: "Your session has expired. Please sign in again.",
-      });
+    res.status(401).json({
+      success: false,
+      message: "Your session has expired. Please sign in again.",
+    });
   }
 };

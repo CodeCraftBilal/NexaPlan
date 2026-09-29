@@ -8,6 +8,10 @@ import { HttpError } from "../utils/httpError.js";
 function getProvider(): AIProvider {
   const provider =
     env.AI_PROVIDER ?? (hasAPIKey(env.OPENAI_API_KEY) ? "openai" : "gemini");
+
+  if (provider === "rapid") {
+    return { generateText: OpenAIService.generateRapidText };
+  }
   return provider === "openai" ? OpenAIService : GeminiService;
 }
 

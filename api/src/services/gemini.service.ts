@@ -13,9 +13,11 @@ export class GeminiService {
         contents: prompt,
       });
       const text = response.text;
+      console.log("Response of gemini service is ", text);
       if (!text?.trim()) throw new Error("Empty provider response");
       return text;
-    } catch {
+    } catch (error) {
+      console.error("Gemini request failed ", error);
       throw new HttpError(
         502,
         "Gemini could not generate a response. Please try again.",

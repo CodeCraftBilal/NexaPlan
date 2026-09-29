@@ -41,12 +41,10 @@ export class ProjectAssistantService {
       asOf: new Date().toISOString(),
       description: project.description?.slice(0, 5000),
       tasksTruncated: tasks.length > 100,
-      tasks: tasks
-        .slice(0, 100)
-        .map((task) => ({
-          ...task,
-          description: task.description?.slice(0, 1000),
-        })),
+      tasks: tasks.slice(0, 100).map((task) => ({
+        ...task,
+        description: task.description?.slice(0, 1000),
+      })),
     };
     const result = await AIService.chat(context, input.message, input.history);
     return {

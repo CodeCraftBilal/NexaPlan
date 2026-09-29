@@ -31,10 +31,8 @@ export const errorHandler = (
     return;
   }
   console.error("Request failed:", err);
-  res
-    .status(500)
-    .json({
-      success: false,
-      message: "Something went wrong. Please try again.",
-    });
+  res.status(500).json({
+    success: false,
+    message: "Something went wrong. Please try again.",
+  });
 };
