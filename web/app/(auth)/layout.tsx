@@ -127,9 +127,7 @@ export default function AuthLayout({
             Back to home <ArrowUpRight size={14} />
           </Link>
         </div>
-        <div className="mx-auto my-auto w-full max-w-100 py-14">
-          {children}
-        </div>
+        <div className="mx-auto my-auto w-full max-w-100 py-14">{children}</div>
         <p className="text-center text-[11px] text-[#727b69]">
           Your next chapter of better work starts here.
         </p>
