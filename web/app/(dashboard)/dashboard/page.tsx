@@ -144,7 +144,7 @@ export default function DashboardPage() {
           </h1>
           <p>A little focus today. A big step forward tomorrow.</p>
         </div>
-        <div className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-zinc-400">
+        <div className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-ui-label text-zinc-400">
           <CalendarDays className="size-3.5" />
           {new Date().toLocaleDateString("en-US", {
             month: "long",
@@ -158,7 +158,7 @@ export default function DashboardPage() {
           role="alert"
           className="panel flex flex-wrap items-center justify-between gap-3 p-6"
         >
-          <p className="text-sm text-danger">{error}</p>
+          <p className="text-ui-body text-danger">{error}</p>
           <button
             className="btn-secondary"
             onClick={() => {
@@ -180,7 +180,9 @@ export default function DashboardPage() {
                 className="panel group p-5 transition-colors hover:border-zinc-600"
               >
                 <div className="mb-5 flex items-center justify-between">
-                  <span className="text-xs text-zinc-400">{stat.title}</span>
+                  <span className="text-ui-label text-zinc-400">
+                    {stat.title}
+                  </span>
                   <stat.icon className={`size-4 ${stat.color}`} />
                 </div>
                 <div className="flex items-center justify-between">
@@ -193,7 +195,7 @@ export default function DashboardPage() {
                   </span>
                   <ArrowUpRight className="size-4 text-zinc-600 transition-colors group-hover:text-primary" />
                 </div>
-                <p className="mt-3 text-[10px] text-zinc-500">
+                <p className="mt-3 text-ui-meta text-zinc-500">
                   {stat.subtitle}
                 </p>
               </Link>
@@ -201,13 +203,13 @@ export default function DashboardPage() {
           </div>
           <div className="grid gap-5 xl:grid-cols-[1fr_330px]">
             <section className="panel overflow-hidden">
-              <div className="flex items-center justify-between border-b border-border px-5 py-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-5">
                 <div className="flex items-center gap-2.5">
                   <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <FolderKanban className="size-3.5" />
                   </span>
-                  <h2 className="text-sm font-semibold">Your projects</h2>
-                  <span className="text-xs text-zinc-600">
+                  <h2 className="text-base font-semibold">Your projects</h2>
+                  <span className="text-ui-label text-zinc-600">
                     {projects.length.toString().padStart(2, "0")}
                   </span>
                 </div>
@@ -233,15 +235,15 @@ export default function DashboardPage() {
                       className="group flex items-center gap-4 px-5 py-5 transition-colors hover:bg-white/2"
                     >
                       <span
-                        className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold ${index % 2 ? "bg-[#acb9f1]/10 text-[#acb9f1]" : "bg-primary/10 text-primary"}`}
+                        className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-base font-semibold ${index % 2 ? "bg-[#acb9f1]/10 text-[#acb9f1]" : "bg-primary/10 text-primary"}`}
                       >
                         {project.name.charAt(0)}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium group-hover:text-primary">
+                        <span className="block truncate text-ui-body font-medium group-hover:text-primary">
                           {project.name}
                         </span>
-                        <span className="mt-1.5 block truncate text-[11px] text-zinc-500">
+                        <span className="mt-1.5 block truncate text-ui-meta text-zinc-500">
                           {project.workspace?.name}{" "}
                           <span className="mx-1">·</span>{" "}
                           {project._count?.tasks || 0} tasks
@@ -262,16 +264,16 @@ export default function DashboardPage() {
                   <div className="icon-box mb-1 text-primary">
                     <FolderKanban className="size-5" />
                   </div>
-                  <h3 className="text-sm font-medium">
+                  <h3 className="text-ui-body font-medium">
                     Great work starts with a plan
                   </h3>
-                  <p className="max-w-xs text-xs leading-relaxed text-zinc-500">
+                  <p className="max-w-xs text-ui-label leading-relaxed text-zinc-500">
                     Create a workspace, add your first project, and turn ideas
                     into progress.
                   </p>
                   <Link
                     href="/workspaces"
-                    className="btn-secondary mt-2 text-xs!"
+                    className="btn-secondary mt-2 text-ui-label!"
                   >
                     <Plus className="size-3.5" />
                     Create a workspace
@@ -281,14 +283,14 @@ export default function DashboardPage() {
             </section>
             <section className="panel flex flex-col p-5">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Your task snapshot</h2>
-                <span className="text-[10px] text-zinc-500">All time</span>
+                <h2 className="text-base font-semibold">Your task snapshot</h2>
+                <span className="text-ui-meta text-zinc-500">All time</span>
               </div>
               <div className="mt-7 flex items-end gap-2">
                 <span className="text-4xl font-medium tracking-tight">
                   {loading ? "—" : tasks.length}
                 </span>
-                <span className="mb-1 text-xs text-zinc-500">
+                <span className="mb-1 text-ui-label text-zinc-500">
                   assigned tasks
                 </span>
               </div>
@@ -313,7 +315,7 @@ export default function DashboardPage() {
                 {distribution.map((d) => (
                   <div
                     key={d.name}
-                    className="flex items-center gap-2.5 text-[11px]"
+                    className="flex items-center gap-2.5 text-ui-meta"
                   >
                     <span
                       className="size-1.5 rounded-full"
@@ -334,14 +336,16 @@ export default function DashboardPage() {
               </Link>
             </section>
             <section className="panel overflow-hidden">
-              <div className="flex items-center justify-between border-b border-border px-5 py-5">
-                <h2 className="text-sm font-semibold">Your next priorities</h2>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-5">
+                <h2 className="text-base font-semibold">
+                  Your next priorities
+                </h2>
                 <Link href="/my-tasks" className="muted-link">
                   My tasks <ArrowUpRight className="size-3.5" />
                 </Link>
               </div>
               {loading ? (
-                <div className="p-6 text-xs text-zinc-500">
+                <div className="p-6 text-ui-label text-zinc-500">
                   Finding your next steps…
                 </div>
               ) : focusTasks.length ? (
@@ -354,15 +358,15 @@ export default function DashboardPage() {
                     >
                       <Circle className="size-4 shrink-0 text-zinc-600" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-medium">
+                        <span className="block truncate text-ui-body font-medium">
                           {task.title}
                         </span>
-                        <span className="mt-1 block text-[10px] text-zinc-500">
+                        <span className="mt-1 block text-ui-meta text-zinc-500">
                           {task.project?.name || "Project task"}
                         </span>
                       </span>
                       <span
-                        className={`text-[10px] ${task.priority === "URGENT" ? "text-danger" : "text-zinc-500"}`}
+                        className={`text-ui-meta ${task.priority === "URGENT" ? "text-danger" : "text-zinc-500"}`}
                       >
                         {label(task.priority)}
                       </span>
@@ -375,10 +379,10 @@ export default function DashboardPage() {
                     <Check className="size-5" />
                   </span>
                   <div>
-                    <h3 className="text-sm font-medium">
+                    <h3 className="text-ui-body font-medium">
                       A clear space for what’s next
                     </h3>
-                    <p className="mt-1.5 text-xs text-zinc-500">
+                    <p className="mt-1.5 text-ui-label text-zinc-500">
                       Tasks assigned to you will appear here.
                     </p>
                   </div>
@@ -388,7 +392,7 @@ export default function DashboardPage() {
             <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-[#202819] p-6">
               <div className="dot-grid pointer-events-none absolute inset-0 opacity-30" />
               <div className="relative">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 px-2 py-1 text-[9px] font-medium uppercase tracking-wider text-primary">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 px-2 py-1 text-ui-caption font-medium uppercase tracking-wider text-primary">
                   <Sparkles className="size-3" />
                   Built for your next big idea
                 </span>
@@ -397,7 +401,7 @@ export default function DashboardPage() {
                   <br />
                   More forward.
                 </h2>
-                <p className="mt-3 text-xs leading-relaxed text-[#a4b197]">
+                <p className="mt-3 text-ui-label leading-relaxed text-[#a4b197]">
                   Get a fresh perspective on your project with AI summaries,
                   plans, and risk analysis.
                 </p>
@@ -407,7 +411,7 @@ export default function DashboardPage() {
                       ? `/projects/${projects[0].id}/ai`
                       : "/projects/new"
                   }
-                  className="mt-5 inline-flex items-center gap-2 text-xs font-semibold text-primary"
+                  className="mt-5 inline-flex items-center gap-2 text-ui-label font-semibold text-primary"
                 >
                   {projects.length
                     ? "Open project assistant"
@@ -419,7 +423,7 @@ export default function DashboardPage() {
           </div>
         </>
       )}
-      <div className="flex items-center justify-center gap-2 pt-2 text-[10px] text-zinc-600">
+      <div className="flex items-center justify-center gap-2 pt-2 text-ui-meta text-zinc-400">
         <Layers className="size-3" />A little more organized. A little more
         possible.
       </div>

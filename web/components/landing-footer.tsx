@@ -13,13 +13,13 @@ export function LandingFooter({ authenticated }: { authenticated: boolean }) {
         <div className="grid gap-10 pb-10 md:grid-cols-[1.1fr_0.7fr_1.2fr] md:gap-8">
           <div>
             <Brand />
-            <p className="mt-5 max-w-xs text-sm leading-relaxed text-zinc-400">
+            <p className="mt-5 max-w-xs text-ui-body leading-relaxed text-zinc-400">
               A little more organized. A little more possible. Make room for
               your next big idea.
             </p>
             <Link
               href={destination}
-              className="group mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
+              className="group mt-5 inline-flex min-h-11 items-center gap-2 text-ui-body font-medium text-primary transition-colors hover:text-primary-hover"
             >
               {authenticated
                 ? "Open your workspace"
@@ -32,7 +32,7 @@ export function LandingFooter({ authenticated }: { authenticated: boolean }) {
           </div>
 
           <nav aria-label="Footer navigation">
-            <h2 className="text-sm font-semibold text-foreground">
+            <h2 className="text-ui-body font-semibold text-foreground">
               Explore ProjectAI
             </h2>
             <div className="mt-4 flex flex-col items-start">
@@ -47,7 +47,7 @@ export function LandingFooter({ authenticated }: { authenticated: boolean }) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="group inline-flex min-h-11 items-center gap-2 text-sm text-zinc-400 transition-colors hover:text-primary"
+                  className="group inline-flex min-h-11 items-center gap-2 text-ui-body text-zinc-400 transition-colors hover:text-primary"
                 >
                   {link.label}
                   <ArrowUpRight
@@ -60,7 +60,7 @@ export function LandingFooter({ authenticated }: { authenticated: boolean }) {
           </nav>
 
           <div>
-            <h2 className="mb-4 text-sm font-semibold text-foreground">
+            <h2 className="mb-4 text-ui-body font-semibold text-foreground">
               A little clarity
             </h2>
             {[
@@ -79,14 +79,14 @@ export function LandingFooter({ authenticated }: { authenticated: boolean }) {
                 key={item.question}
                 className="group border-b border-border open:pb-4"
               >
-                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 text-sm text-zinc-300 transition-colors hover:text-primary [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 text-ui-body text-zinc-300 transition-colors hover:text-primary [&::-webkit-details-marker]:hidden">
                   {item.question}
                   <Plus
                     aria-hidden="true"
                     className="size-4 shrink-0 text-primary transition-transform group-open:rotate-45 motion-reduce:transition-none"
                   />
                 </summary>
-                <p className="pr-5 text-sm leading-relaxed text-zinc-400">
+                <p className="pr-5 text-ui-body leading-relaxed text-zinc-400">
                   {item.answer}
                 </p>
               </details>
@@ -95,7 +95,7 @@ export function LandingFooter({ authenticated }: { authenticated: boolean }) {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
-          <p className="text-sm text-zinc-500">
+          <p className="text-ui-body text-zinc-500">
             © {new Date().getFullYear()} ProjectAI. Big ideas start here.
           </p>
           <button
@@ -110,7 +110,7 @@ export function LandingFooter({ authenticated }: { authenticated: boolean }) {
               });
               document.getElementById("home")?.focus({ preventScroll: true });
             }}
-            className="group inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-zinc-300 transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+            className="group inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 py-2 text-ui-body text-zinc-300 transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
           >
             Back to top
             <ArrowUp

@@ -70,7 +70,7 @@ export default function DashboardLayout({
         <div className="panel max-w-md p-8 text-center">
           <Brand />
           <h1 className="mt-8 text-xl font-semibold">Let’s reconnect</h1>
-          <p role="alert" className="my-4 text-sm text-zinc-400">
+          <p role="alert" className="my-4 text-ui-body text-zinc-400">
             {sessionError}
           </p>
           <button className="btn-primary" onClick={() => void initializeAuth()}>
@@ -87,7 +87,9 @@ export default function DashboardLayout({
       >
         <Brand />
         <Loader2 className="size-5 animate-spin text-primary" />
-        <span className="text-xs text-zinc-500">Opening your workspace…</span>
+        <span className="text-ui-label text-zinc-500">
+          Opening your workspace…
+        </span>
       </div>
     );
 
@@ -128,18 +130,18 @@ export default function DashboardLayout({
             href="/workspaces"
             className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-3 mt-5"
           >
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-ui-body font-semibold text-primary">
               {user?.name?.charAt(0).toUpperCase()}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-semibold">
+              <span className="block truncate text-ui-label font-semibold">
                 My workspace
               </span>
-              <span className="mt-0.5 block text-[10px] text-zinc-500">
+              <span className="mt-0.5 block text-ui-caption text-zinc-400">
                 Make room for great work
               </span>
             </span>
-            <ChevronRight className="size-3.5 text-zinc-500" />
+            <ChevronRight className="size-3.5 shrink-0 text-zinc-500" />
           </Link>
         </div>
         <nav aria-label="Main navigation" className="mt-12 px-4">
@@ -155,7 +157,7 @@ export default function DashboardLayout({
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
                   aria-current={active ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-3 text-[13px] font-medium transition-colors ${active ? "bg-primary/10 text-primary" : "text-zinc-400 hover:bg-white/5 hover:text-white"}`}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-3 text-ui-label font-medium transition-colors ${active ? "bg-primary/10 text-primary" : "text-zinc-400 hover:bg-white/5 hover:text-white"}`}
                 >
                   <Icon className="size-4.5" />
                   {item.label}
@@ -170,16 +172,16 @@ export default function DashboardLayout({
         <div className="mt-auto p-4">
           <div className="relative overflow-hidden rounded-xl border border-primary/15 bg-[#1d2518] p-4">
             <Sparkles className="mb-3 size-5 text-primary" />
-            <p className="text-sm font-medium">
+            <p className="text-ui-body font-medium">
               A little clarity. A lot of progress.
             </p>
-            <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+            <p className="mt-2 text-ui-label leading-relaxed text-zinc-400">
               Turn your next big idea into a plan with AI.
             </p>
             <Link
               onClick={() => setMobileOpen(false)}
               href="/projects/new"
-              className="mt-4 flex items-center gap-2 text-xs font-semibold text-primary"
+              className="mt-4 flex items-center gap-2 text-ui-label font-semibold text-primary"
             >
               Start a project <ArrowUpRight className="size-3.5" />
             </Link>
@@ -187,7 +189,7 @@ export default function DashboardLayout({
         </div>
         <div className="border-t border-border p-4">
           <div className="flex items-center gap-3 px-1">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#32392a] text-xs font-semibold text-primary">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#32392a] text-ui-label font-semibold text-primary">
               {user?.name
                 .split(" ")
                 .map((n) => n[0])
@@ -196,8 +198,8 @@ export default function DashboardLayout({
                 .toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium">{user?.name}</p>
-              <p className="mt-1 truncate text-[10px] text-zinc-500">
+              <p className="truncate text-ui-label font-medium">{user?.name}</p>
+              <p className="mt-1 truncate text-ui-meta text-zinc-500">
                 {user?.email}
               </p>
             </div>
@@ -216,7 +218,7 @@ export default function DashboardLayout({
             </button>
           </div>
           {logoutError && (
-            <p role="alert" className="mt-3 text-xs text-danger">
+            <p role="alert" className="mt-3 text-ui-label text-danger">
               {logoutError}
             </p>
           )}
@@ -233,20 +235,20 @@ export default function DashboardLayout({
             >
               <Menu className="size-5" />
             </button>
-            <span className="hidden text-xs text-zinc-500 sm:inline">
+            <span className="hidden text-ui-label text-zinc-500 sm:inline">
               Workspace
             </span>
             <ChevronRight className="hidden size-3 text-zinc-600 sm:block" />
-            <span className="text-xs font-medium">{activeLabel}</span>
+            <span className="text-ui-label font-medium">{activeLabel}</span>
           </div>
           <div className="flex items-center gap-5">
-            <span className="hidden items-center gap-2 text-[11px] text-zinc-500 md:flex">
+            <span className="hidden items-center gap-2 text-ui-meta text-zinc-500 md:flex">
               <span className="size-1.5 rounded-full bg-primary" />
               Let’s make progress
             </span>
             <Link
               href="/projects/new"
-              className="btn-secondary min-h-8! px-3! py-2! text-xs!"
+              className="btn-secondary min-h-8! px-3! py-2! text-ui-label!"
             >
               <Plus className="size-3.5" />
               New project

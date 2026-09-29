@@ -34,19 +34,19 @@ export default function LandingPage() {
         >
           <a
             href="#how-it-works"
-            className="hidden text-sm text-zinc-400 transition-colors hover:text-white sm:block"
+            className="hidden text-ui-body text-zinc-400 transition-colors hover:text-white sm:block"
           >
             How it works
           </a>
           <Link
             href={authenticated ? "/dashboard" : "/login"}
-            className="text-sm text-zinc-300 transition-colors hover:text-primary"
+            className="text-ui-body text-zinc-300 transition-colors hover:text-primary"
           >
             {authenticated ? "Your workspace" : "Sign in"}
           </Link>
           <Link
             href={destination}
-            className="btn-primary min-h-10! px-4! py-2.5! text-sm!"
+            className="btn-primary min-h-10! px-4! py-2.5! text-ui-body!"
           >
             Get started <ArrowUpRight className="size-3.5" />
           </Link>
@@ -55,7 +55,7 @@ export default function LandingPage() {
       <main>
         <section className="relative mx-auto grid max-w-[1920px] items-center gap-14 px-6 pb-20 pt-10 sm:px-10 sm:pt-16 lg:min-h-162.5 lg:grid-cols-[1fr_1.1fr] lg:gap-12 lg:pb-24">
           <div className="page-enter relative z-10">
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-[10px] text-zinc-300">
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-ui-meta text-zinc-300">
               <span className="size-1.5 rounded-full bg-primary" />A clearer way
               to move work forward
               <ArrowUpRight className="ml-1 size-3 text-primary" />
@@ -67,7 +67,7 @@ export default function LandingPage() {
               <br />
               <span className="text-primary">Real progress.</span>
             </h1>
-            <p className="mt-7 max-w-md text-base leading-[1.85] text-zinc-400">
+            <p className="mt-7 max-w-md text-[17px] leading-[1.85] text-zinc-400">
               Bring your projects, people, and next steps together. Meet the
               thoughtful workspace with AI on your side.
             </p>
@@ -82,7 +82,7 @@ export default function LandingPage() {
                 Take a closer look <ArrowUpRight className="size-3.5" />
               </a>
             </div>
-            <div className="mt-7 flex gap-4 text-[10px] text-zinc-500">
+            <div className="mt-7 flex flex-wrap gap-x-4 gap-y-2 text-ui-meta text-zinc-500">
               <span className="flex items-center gap-1.5">
                 <Check className="size-3 text-primary" />
                 Your team, in sync
@@ -104,7 +104,7 @@ export default function LandingPage() {
                 <span className="size-1.5 rounded-full bg-zinc-600" />
                 <span className="size-1.5 rounded-full bg-zinc-600" />
                 <span className="size-1.5 rounded-full bg-zinc-600" />
-                <span className="mx-auto text-[8px] text-zinc-500">
+                <span className="mx-auto text-ui-caption text-zinc-500">
                   projectai / your next big thing
                 </span>
                 <Command className="size-3 text-zinc-600" />
@@ -112,17 +112,17 @@ export default function LandingPage() {
               <div className="p-5 sm:p-7">
                 <div className="mb-6 flex items-start justify-between">
                   <div>
-                    <span className="text-[9px] text-zinc-500">
+                    <span className="text-ui-caption text-zinc-500">
                       WORKSPACE / OVERVIEW
                     </span>
                     <h2 className="mt-2 text-lg font-medium tracking-tight sm:text-xl">
                       Good things are in motion.
                     </h2>
-                    <p className="mt-1.5 text-[10px] text-zinc-500">
+                    <p className="mt-1.5 text-ui-meta text-zinc-500">
                       A clear view of the work that matters.
                     </p>
                   </div>
-                  <span className="flex size-8 items-center justify-center rounded-full bg-primary/15 text-[10px] text-primary">
+                  <span className="flex size-8 items-center justify-center rounded-full bg-primary/15 text-ui-meta text-primary">
                     JD
                   </span>
                 </div>
@@ -136,20 +136,22 @@ export default function LandingPage() {
                       key={name}
                       className="rounded-lg border border-border bg-background/40 p-3"
                     >
-                      <p className="text-[8px] text-zinc-500">{name}</p>
+                      <p className="text-ui-caption text-zinc-500">{name}</p>
                       <p className={`mt-2 text-2xl font-medium ${color}`}>
                         {number}
-                        <span className="ml-2 text-[8px] text-zinc-600">↗</span>
+                        <span className="ml-2 text-ui-caption text-zinc-400">
+                          ↗
+                        </span>
                       </p>
                     </div>
                   ))}
                 </div>
                 <div className="rounded-xl border border-border bg-background/30">
                   <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                    <span className="text-[10px] font-medium">
+                    <span className="text-ui-meta font-medium">
                       Website launch
                     </span>
-                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[8px] text-primary">
+                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-ui-caption text-primary">
                       In progress
                     </span>
                   </div>
@@ -164,22 +166,22 @@ export default function LandingPage() {
                       className="flex items-center gap-2.5 border-b border-white/3 px-4 py-3"
                     >
                       {done ? (
-                        <span className="flex size-3.5 items-center justify-center rounded-full bg-primary/15 text-primary">
+                        <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
                           <Check className="size-2.5" />
                         </span>
                       ) : (
-                        <Circle className="size-3.5 text-zinc-600" />
+                        <Circle className="size-3.5 shrink-0 text-zinc-600" />
                       )}
                       <span
-                        className={`text-[10px] ${done ? "text-zinc-500 line-through" : "text-zinc-300"}`}
+                        className={`text-ui-meta ${done ? "text-zinc-500 line-through" : "text-zinc-300"}`}
                       >
                         {title}
                       </span>
-                      <span className="ml-auto size-4 rounded-full bg-[#343b2c]" />
+                      <span className="ml-auto size-4 shrink-0 rounded-full bg-[#343b2c]" />
                     </div>
                   ))}
                 </div>
-                <p className="mt-3 text-right text-[8px] text-zinc-600">
+                <p className="mt-3 text-right text-ui-caption text-zinc-400">
                   Illustrative workspace preview
                 </p>
               </div>
@@ -189,10 +191,10 @@ export default function LandingPage() {
                 <Sparkles className="size-4" />
               </span>
               <div>
-                <p className="text-[10px] font-medium text-primary">
+                <p className="text-ui-meta font-medium text-primary">
                   A little help from AI
                 </p>
-                <p className="mt-1 text-[9px] leading-relaxed text-[#b8c4ac]">
+                <p className="mt-1 text-ui-caption leading-relaxed text-[#b8c4ac]">
                   From “where do we start?” to a clear next step.
                 </p>
               </div>
@@ -213,7 +215,7 @@ export default function LandingPage() {
                   Less friction. More momentum.
                 </h2>
               </div>
-              <p className="max-w-xs text-sm leading-relaxed text-zinc-500">
+              <p className="max-w-xs text-ui-body leading-relaxed text-zinc-500">
                 From the first spark to the final checkmark.
                 <br />
                 One calm place for everything in between.
@@ -246,12 +248,12 @@ export default function LandingPage() {
                 >
                   <div className="mb-9 flex items-center justify-between">
                     <item.icon className="size-5 text-primary" />
-                    <span className="text-[10px] text-zinc-600">
+                    <span className="text-ui-meta text-zinc-600">
                       / {item.number}
                     </span>
                   </div>
-                  <h3 className="text-base font-medium">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-[1.85] text-zinc-500">
+                  <h3 className="text-lg font-medium">{item.title}</h3>
+                  <p className="mt-3 text-ui-body leading-[1.85] text-zinc-500">
                     {item.text}
                   </p>
                 </div>
@@ -269,7 +271,7 @@ export default function LandingPage() {
               <h2 className="text-xl font-medium tracking-tight">
                 Your next chapter starts with a plan.
               </h2>
-              <p className="mt-2 text-sm text-zinc-500">
+              <p className="mt-2 text-ui-body text-zinc-500">
                 Give your best ideas a place to grow.
               </p>
             </div>

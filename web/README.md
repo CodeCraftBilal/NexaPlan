@@ -93,6 +93,8 @@ Route groups `(auth)` and `(dashboard)` organize layouts without appearing in UR
 
 Use `@/` imports for paths relative to `web/`. Interactive pages/components declare `"use client"`; preserve server/client boundaries. Reuse the existing dark charcoal/lime theme, `panel`, `field`, `btn-primary`, and related utilities. Fonts currently use a CSS fallback stack; there is no `next/font` setup. [lucide-react.d.ts](lucide-react.d.ts) contains an ambient module declaration, so type checking alone does not establish icon export correctness.
 
+Homepage and dashboard typography uses shared Tailwind theme tokens in `app/globals.css`: `text-ui-body` (15px), `text-ui-label` (14px), `text-ui-meta` (13px), and `text-ui-caption` (12px), expressed in rem at the default root size. Reuse these roles for readable body text, navigation, and supporting details; preserve the larger heading hierarchy and responsive wrapping. The shared buttons, badges, eyebrows, and secondary links use the same scale.
+
 ## Authentication contract
 
 1. Register/login calls return `{ success: true, user }` and set an HttpOnly `token` cookie. Credentials/tokens are not stored in localStorage or returned as a login token field.

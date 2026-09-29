@@ -2,6 +2,14 @@
 
 @theme {
   --font-sans: "Inter", "Segoe UI", Arial, sans-serif;
+  --text-ui-body: 18px;
+  --text-ui-body--line-height: 1.6;
+  --text-ui-label: 16px;
+  --text-ui-label--line-height: 1.5;
+  --text-ui-meta: 14px;
+  --text-ui-meta--line-height: 1.5;
+  --text-ui-caption: 13px;
+  --text-ui-caption--line-height: 1.5;
   --color-background: #111312;
   --color-foreground: #edf0eb;
   --color-primary: #c8f36a;
@@ -84,16 +92,16 @@ select option {
     @apply text-3xl font-semibold tracking-tight;
   }
   .page-header p {
-    @apply mt-2 text-sm leading-relaxed text-zinc-400;
+    @apply mt-2 text-ui-body leading-relaxed text-zinc-400;
   }
   .eyebrow {
-    @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500;
+    @apply text-ui-caption font-semibold uppercase tracking-[0.14em] text-zinc-400;
   }
   .btn-primary {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#18200e] transition-colors hover:bg-primary-hover disabled:opacity-50;
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-ui-body font-semibold text-[#18200e] transition-colors hover:bg-primary-hover disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:bg-surface-hover disabled:opacity-50;
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-ui-body font-medium text-zinc-200 transition-colors hover:bg-surface-hover disabled:opacity-50;
   }
   .field {
     @apply w-full rounded-lg border border-border bg-background px-3.5 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-zinc-600 focus:border-primary/70 focus:ring-2 focus:ring-primary/10;
@@ -102,13 +110,13 @@ select option {
     @apply flex flex-col items-center justify-center gap-3 px-6 py-14 text-center;
   }
   .status-badge {
-    @apply inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[10px] font-medium capitalize text-zinc-300;
+    @apply inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-ui-caption font-medium capitalize text-zinc-300;
   }
   .icon-box {
     @apply flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-background;
   }
   .muted-link {
-    @apply inline-flex items-center gap-1.5 text-xs font-medium text-zinc-400 transition-colors hover:text-primary;
+    @apply inline-flex items-center gap-1.5 text-ui-label font-medium text-zinc-400 transition-colors hover:text-primary;
   }
 }
 
