@@ -74,7 +74,7 @@ export default function ProjectsPage() {
             <button
               key={tab.id}
               onClick={() => setFilter(tab.id)}
-              className={`rounded-lg px-3 py-2 text-xs font-medium transition ${filter === tab.id ? "bg-surface-hover text-foreground" : "text-[#93998d] hover:text-foreground"}`}
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition ${filter === tab.id ? "bg-surface-hover text-foreground" : "text-[#93998d] hover:text-foreground"}`}
             >
               {tab.name}
               {tab.id === "ALL" && (

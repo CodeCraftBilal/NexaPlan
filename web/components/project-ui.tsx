@@ -143,7 +143,7 @@ export function ProjectCard({
         <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-background text-primary">
           <FolderKanban size={21} strokeWidth={1.6} />
         </div>
-        <span className="font-mono text-xs text-[#686e65]">
+        <span className="font-mono text-sm text-[#686e65]">
           {String(index + 1).padStart(2, "0")}
         </span>
       </div>
@@ -163,7 +163,7 @@ export function ProjectCard({
       <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-4">
         <Badge value={project.status} />
         {project._count ? (
-          <span className="text-xs text-[#93998d]">
+          <span className="text-sm text-[#93998d]">
             {project._count.tasks} tasks · {project._count.members} members
           </span>
         ) : (
@@ -194,7 +194,7 @@ export function ProjectHeader({
     <div className="space-y-6">
       <Link
         href="/projects"
-        className="inline-flex items-center gap-2 text-xs text-[#93998d] hover:text-foreground"
+        className="inline-flex items-center gap-2 text-sm text-[#93998d] hover:text-foreground"
       >
         <ArrowLeft size={14} />
         All projects
@@ -343,7 +343,7 @@ export function TaskComposer({
       <div>
         <label
           htmlFor="task-title"
-          className="mb-2 block text-xs font-medium text-[#b1b7a9]"
+          className="mb-2 block text-sm font-medium text-[#b1b7a9]"
         >
           Task name
         </label>
@@ -361,7 +361,7 @@ export function TaskComposer({
       <div>
         <label
           htmlFor="task-description"
-          className="mb-2 block text-xs font-medium text-[#b1b7a9]"
+          className="mb-2 block text-sm font-medium text-[#b1b7a9]"
         >
           Description <span className="text-[#686e65]">(optional)</span>
         </label>
@@ -378,7 +378,7 @@ export function TaskComposer({
         <div>
           <label
             htmlFor="task-priority"
-            className="mb-2 block text-xs font-medium text-[#b1b7a9]"
+            className="mb-2 block text-sm font-medium text-[#b1b7a9]"
           >
             Priority
           </label>
@@ -398,7 +398,7 @@ export function TaskComposer({
         <div>
           <label
             htmlFor="task-assignee"
-            className="mb-2 block text-xs font-medium text-[#b1b7a9]"
+            className="mb-2 block text-sm font-medium text-[#b1b7a9]"
           >
             Assignee
           </label>
@@ -479,7 +479,7 @@ export function TaskRow({
         {showProject && task.project && (
           <Link
             href={`/projects/${task.projectId}`}
-            className="mt-1 inline-block text-xs text-[#93998d] hover:text-primary"
+            className="mt-1 inline-block text-sm text-[#93998d] hover:text-primary"
           >
             {task.project.name}
           </Link>
@@ -492,7 +492,7 @@ export function TaskRow({
           value={task.status}
           disabled={busy}
           onChange={(e) => onStatus(task, e.target.value as TaskStatus)}
-          className="max-w-32 rounded-md border border-border bg-background px-2 py-1.5 text-xs text-[#b1b7a9] focus:outline-primary"
+          className="max-w-32 rounded-md border border-border bg-background px-2 py-1.5 text-sm text-[#b1b7a9] focus:outline-primary"
         >
           {statuses.map((status) => (
             <option key={status} value={status}>
@@ -524,12 +524,12 @@ export function Stat({
 }) {
   return (
     <div className="panel px-5 py-5">
-      <p className="mb-4 flex items-center gap-2 text-xs text-[#93998d]">
+      <p className="mb-4 flex items-center gap-2 text-sm text-[#93998d]">
         <Circle size={7} fill="currentColor" />
         {title}
       </p>
       <p className="text-3xl font-semibold tracking-tight">{value}</p>
-      <p className="mt-2 text-xs text-[#686e65]">{caption}</p>
+      <p className="mt-2 text-sm text-[#686e65]">{caption}</p>
     </div>
   );
 }

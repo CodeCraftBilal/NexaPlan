@@ -134,7 +134,7 @@ export default function MyTasksPage() {
                   <button
                     key={tab.id}
                     onClick={() => setFilter(tab.id)}
-                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ${filter === tab.id ? "bg-surface-hover text-primary" : "text-[#93998d] hover:text-foreground"}`}
+                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${filter === tab.id ? "bg-surface-hover text-primary" : "text-[#93998d] hover:text-foreground"}`}
                   >
                     <tab.icon size={13} />
                     {tab.name}
@@ -151,7 +151,7 @@ export default function MyTasksPage() {
                     aria-label="Search my tasks"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="field w-full py-2! pl-9! text-xs"
+                    className="field w-full py-2! pl-9! text-sm"
                     placeholder="Search tasks…"
                   />
                 </div>
@@ -159,7 +159,7 @@ export default function MyTasksPage() {
                   aria-label="Filter by priority"
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="field py-2! text-xs"
+                  className="field py-2! text-sm"
                 >
                   <option value="ALL">All priorities</option>
                   {["URGENT", "HIGH", "MEDIUM", "LOW"].map((value) => (
@@ -204,7 +204,7 @@ export default function MyTasksPage() {
                 />
               </div>
             )}
-            <div className="border-t border-border px-6 py-3 text-xs text-[#686e65]">
+            <div className="border-t border-border px-6 py-3 text-sm text-[#686e65]">
               {filtered.length} of {tasks.length} tasks
             </div>
           </div>

@@ -107,7 +107,7 @@ export default function WorkspacesPage() {
             <div>
               <label
                 htmlFor="workspace-name"
-                className="mb-2 block text-xs text-[#b1b7a9]"
+                className="mb-2 block text-sm text-[#b1b7a9]"
               >
                 Workspace name
               </label>
@@ -125,7 +125,7 @@ export default function WorkspacesPage() {
             <div>
               <label
                 htmlFor="workspace-description"
-                className="mb-2 block text-xs text-[#b1b7a9]"
+                className="mb-2 block text-sm text-[#b1b7a9]"
               >
                 Description (optional)
               </label>
@@ -200,7 +200,7 @@ export default function WorkspacesPage() {
                 {workspace.description ||
                   "Your team’s shared space for meaningful work."}
               </p>
-              <div className="mt-auto flex items-center gap-5 border-t border-border pt-4 text-xs text-[#93998d]">
+              <div className="mt-auto flex items-center gap-5 border-t border-border pt-4 text-sm text-[#93998d]">
                 <span className="flex items-center gap-2">
                   <FolderKanban size={14} />
                   {workspace._count?.projects || 0} projects
@@ -214,7 +214,7 @@ export default function WorkspacesPage() {
           ))}
         </div>
       )}
-      <div className="flex items-center gap-2 text-xs text-[#686e65]">
+      <div className="flex items-center gap-2 text-sm text-[#686e65]">
         <Building2 size={14} />
         One space for your people, projects, and possibilities.
       </div>
