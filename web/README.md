@@ -13,7 +13,7 @@ The repository contains two independent npm packages, `web/` and `api/`, each wi
 ```text
 Browser -> Next.js :3000 -> /api/* rewrite -> Express :5000 -> PostgreSQL
                                                  |
-                                                 +-> Gemini (optional)
+                                                 +-> OpenAI / Gemini (optional)
 ```
 
 - Next.js 16.2.9 App Router, React 19.2.4, strict TypeScript, Tailwind CSS 4.
@@ -48,7 +48,7 @@ API_URL=http://localhost:5000
 | --------- | ---------------------------------------------------------------------------------------------------------- |
 | `API_URL` | Server-side API origin used by Next rewrites; defaults to `http://localhost:5000`. Omit the `/api` suffix. |
 
-Restart the dev server after changing configuration; set `API_URL` before a production build. Do not put `DATABASE_URL`, `JWT_SECRET`, or `GEMINI_API_KEY` in frontend configuration. The browser has no `NEXT_PUBLIC_API_URL` dependency.
+Restart the dev server after changing configuration; set `API_URL` before a production build. Do not put `DATABASE_URL`, `JWT_SECRET`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` in frontend configuration. The browser has no `NEXT_PUBLIC_API_URL` dependency.
 
 ## Routes and implementation status
 
