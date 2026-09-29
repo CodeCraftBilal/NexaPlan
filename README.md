@@ -4,22 +4,22 @@
 
 ProjectAI brings project overviews, a task list, a drag-and-drop board, and contributor management into one web application. Core project management works independently of AI configuration.
 
-The project is under active development. The main management flows are connected to the backend; the in-app AI assistant is currently a demo interface. Two separate backend endpoints support real Gemini-powered plan generation and risk analysis.
+The project is under active development. The main management flows are connected to the backend; the in-app AI assistant is currently a demo interface. Two separate backend endpoints support real OpenAI- or Gemini-powered plan generation and risk analysis.
 
 ## What you can do today
 
-| Feature                 | What it offers                                                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Account access          | Register, sign in, restore your session, and sign out with secure cookie-based authentication.                                                          |
-| Workspaces              | Create workspaces, browse your memberships, and view members and projects.                                                                              |
-| Projects                | Create projects within a workspace, browse accessible projects, and view project progress based on task completion.                                     |
-| Task management         | Create tasks with descriptions, priorities, initial statuses, and optional assignees. Search tasks and filter by priority in project task views.        |
-| Task board              | Move tasks across To do, In progress, In review, Completed, Blocked, and Cancelled columns. Failed status updates restore the previous state.           |
-| My tasks                | See tasks assigned to you and tasks you created that remain unassigned, within projects you can access.                                                 |
-| Personal dashboard      | View accessible project counts, personal task completion, open work, and overdue tasks when due dates exist.                                            |
-| Contributors and roles  | Add registered users to projects by email with manager, member, or viewer roles, subject to backend permission checks.                                  |
-| Responsive interface    | Use the main application with mobile navigation, a dark theme, and loading, error, and empty states.                                                    |
-| AI backend capabilities | Generate a project plan from a description or request risk analysis of submitted context through authenticated API endpoints when Gemini is configured. |
+| Feature                 | What it offers                                                                                                                                                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Account access          | Register, sign in, restore your session, and sign out with secure cookie-based authentication.                                                                  |
+| Workspaces              | Create workspaces, browse your memberships, and view members and projects.                                                                                      |
+| Projects                | Create projects within a workspace, browse accessible projects, and view project progress based on task completion.                                             |
+| Task management         | Create tasks with descriptions, priorities, initial statuses, and optional assignees. Search tasks and filter by priority in project task views.                |
+| Task board              | Move tasks across To do, In progress, In review, Completed, Blocked, and Cancelled columns. Failed status updates restore the previous state.                   |
+| My tasks                | See tasks assigned to you and tasks you created that remain unassigned, within projects you can access.                                                         |
+| Personal dashboard      | View accessible project counts, personal task completion, open work, and overdue tasks when due dates exist.                                                    |
+| Contributors and roles  | Add registered users to projects by email with manager, member, or viewer roles, subject to backend permission checks.                                          |
+| Responsive interface    | Use the main application with mobile navigation, a dark theme, and loading, error, and empty states.                                                            |
+| AI backend capabilities | Generate a project plan from a description or request risk analysis of submitted context through authenticated API endpoints when an AI provider is configured. |
 
 Task assignment is available when creating a task. General task editing, reassignment, and setting due dates are not yet exposed through the current API/UI. The dashboard can display dates already present in the database.
 
@@ -37,8 +37,8 @@ Access is scoped by workspace and project membership. Workspace owners/managers 
 
 AI is intended to assist users with planning and analysis while users retain control over changes.
 
-- **Available in the API:** project-plan generation and risk analysis using Gemini, enabled by an optional API key. These return text and do not create tasks or save insights.
-- **Demo in the website:** the project AI assistant displays canned messages. It is not connected to Gemini or live project data.
+- **Available in the API:** project-plan generation and risk analysis using OpenAI or Gemini, enabled by an optional API key. These return text and do not create tasks or save insights.
+- **Demo in the website:** the project AI assistant displays canned messages. It is not connected to an AI provider or live project data.
 - **Backend foundation:** Socket.IO supports authenticated rooms and task events. The website does not yet subscribe, so changes from another user do not appear through live updates.
 - **Planned:** integrated AI review and acceptance, richer task editing and due dates, subtasks, comments, activity history, notifications, invitation acceptance, password reset, and administration.
 
@@ -52,7 +52,7 @@ The [product requirements](project_requirements.md) describe the broader intende
 | Client data and UI  | Axios, Zustand, Lucide, `@hello-pangea/dnd`                 |
 | API                 | Express 5, TypeScript, Zod, JWT, bcryptjs                   |
 | Database            | PostgreSQL with Prisma 5                                    |
-| AI                  | Google Gemini via `@google/genai`                           |
+| AI                  | OpenAI Responses API and Google Gemini via `@google/genai`  |
 | Realtime foundation | Socket.IO                                                   |
 | Quality checks      | TypeScript, Prettier, web ESLint, Node's test runner        |
 
@@ -61,7 +61,7 @@ Browser
   -> Next.js web app (localhost:3000)
      -> /api rewrite to Express (localhost:5000)
         -> PostgreSQL
-        -> Gemini (optional)
+        -> OpenAI / Gemini (optional)
 ```
 
 The browser sends API requests to the same origin as the website. Next.js forwards them to Express; database credentials and AI keys stay on the backend.
@@ -72,7 +72,7 @@ The browser sends API requests to the same origin as the website. Next.js forwar
 
 - Node.js and npm compatible with the packages; Next.js requires Node >=20.9.0. The repository does not pin a Node version.
 - A running PostgreSQL instance and a database connection you can use locally.
-- A Gemini API key only if you want to call the AI endpoints.
+- An OpenAI or Gemini API key only if you want to call the AI endpoints.
 
 There is no root `package.json`: install dependencies and run commands separately in `api/` and `web/`.
 
@@ -85,7 +85,9 @@ cd api
 npm ci
 ```
 
-On first setup, copy `api/.env.example` to `api/.env` and edit the values. Preserve an existing environment file. Set `DATABASE_URL` for your PostgreSQL database, a private `JWT_SECRET`, and `CLIENT_URL=http://localhost:3000`. Leave `PORT=5000` and `NODE_ENV=development` for the default local setup. Gemini is optional.
+On first setup, copy `api/.env.example` to `api/.env` and edit the values. Preserve an existing environment file. Set `DATABASE_URL` for your PostgreSQL database, a private `JWT_SECRET`, and `CLIENT_URL=http://localhost:3000`. Leave `PORT=5000` and `NODE_ENV=development` for the default local setup. AI provider configuration is optional.
+
+For AI, set `OPENAI_API_KEY` or `GEMINI_API_KEY`. Optionally set `AI_PROVIDER=openai` or `AI_PROVIDER=gemini`; without it, a configured OpenAI key takes precedence. Models are configurable via `OPENAI_MODEL` and `GEMINI_MODEL`. Restart the API after changes.
 
 Then, from `api/`:
 
@@ -144,6 +146,6 @@ npm test
 
 The web package also provides `npm run lint`. Both packages provide `npm run build` and `npm start` for building and serving production output. Production needs configured environment variables, database migrations, and HTTPS for secure cookies; deployment automation is not included.
 
-Existing tests use mocked persistence/HTTP dependencies and do not require a running PostgreSQL instance or Gemini key. They cover important session, navigation, validation, and access-control behavior, but are not a complete browser or live-database integration suite.
+Existing tests use mocked persistence/HTTP dependencies and do not require a running PostgreSQL instance or AI provider key. They cover important session, navigation, validation, and access-control behavior, but are not a complete browser or live-database integration suite.
 
 Before making changes, read [AGENTS.md](AGENTS.md), the [web development guide](web/README.md), and the [API development guide](api/README.md). Keep code modular, reuse existing components/services, and enforce permissions on the backend. Include documentation updates with major changes: this README explains the product to users and developers; package READMEs provide detailed context for implementation and future AI sessions.

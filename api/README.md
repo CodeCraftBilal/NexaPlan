@@ -1,12 +1,12 @@
 # AI Project Manager API
 
-Express backend for **ProjectAI**, an AI-assisted project management application. It owns authentication, workspace/project access, persistence, task operations, and optional Gemini calls. The actual directory is `api/`; the companion frontend is [web/](../web/README.md).
+Express backend for **ProjectAI**, an AI-assisted project management application. It owns authentication, workspace/project access, persistence, task operations, and optional OpenAI/Gemini calls. The actual directory is `api/`; the companion frontend is [web/](../web/README.md).
 
 ## Start here in a new session
 
 Read the [product overview](../README.md), [AGENTS.md](../AGENTS.md), this README, and the [web README](../web/README.md). [project_requirements.md](../project_requirements.md) describes the target product, including substantial unimplemented scope. Source and tests determine current behavior; schema models are not proof that an API exists.
 
-There are two independent npm packages with separate lockfiles and no root npm runner. The normal request path is browser -> Next.js `/api` rewrite -> Express -> PostgreSQL. Gemini is optional. Socket.IO shares Express's HTTP server but is not yet consumed by the web app.
+There are two independent npm packages with separate lockfiles and no root npm runner. The normal request path is browser -> Next.js `/api` rewrite -> Express -> PostgreSQL. AI provider configuration is optional. Socket.IO shares Express's HTTP server but is not yet consumed by the web app.
 
 ## Stack and module layout
 
@@ -22,7 +22,7 @@ Express 5, TypeScript with strict NodeNext/ESM configuration, Prisma 5 with Post
 | [src/config/socket.ts](src/config/socket.ts)                                                           | Socket authentication and authorized project/workspace room joins.                              |
 | [src/routes/](src/routes/)                                                                             | Auth, workspace, project, task, and AI HTTP handlers.                                           |
 | [src/services/access.service.ts](src/services/access.service.ts)                                       | Shared workspace/project authorization and contributor permission flags.                        |
-| [src/services/](src/services/)                                                                         | Workspace, project, task persistence and Gemini operations.                                     |
+| [src/services/](src/services/)                                                                         | Workspace, project, task persistence and AI provider operations.                                |
 | [src/middleware/auth.ts](src/middleware/auth.ts)                                                       | Session verification and authenticated request types.                                           |
 | [src/middleware/errorHandler.ts](src/middleware/errorHandler.ts)                                       | Zod, malformed JSON, expected HTTP, and unexpected error responses.                             |
 | [src/utils/validation.ts](src/utils/validation.ts)                                                     | Shared request schemas.                                                                         |
@@ -54,7 +54,7 @@ npm run dev
 
 `migrate deploy` applies existing checked-in migrations. For an intentional schema change on a development database, use `npx prisma migrate dev --name <descriptive_name>`, review and commit the generated migration, and regenerate the client. Do not use `db push` as a replacement for versioned migrations or reset a populated database to resolve drift.
 
-Start `web/` separately. Visit `http://localhost:5000/health` for a process health response, or `http://localhost:5000/api` for the API root. These routes do not query PostgreSQL or Gemini and are not dependency-readiness checks. There is no seed script or default account; register through the frontend.
+Start `web/` separately. Visit `http://localhost:5000/health` for a process health response, or `http://localhost:5000/api` for the API root. These routes do not query PostgreSQL or AI providers and are not dependency-readiness checks. There is no seed script or default account; register through the frontend.
 
 ### Environment
 
@@ -69,7 +69,18 @@ Start `web/` separately. Visit `http://localhost:5000/health` for a process heal
 | `NODE_ENV`       | `development`            | `development`, `production`, or `test`; production enables secure cookies.                                |
 | `GEMINI_API_KEY` | Optional                 | Enables Gemini calls. Missing, empty, or example placeholder values result in a `503` from AI operations. |
 
-`npm run dev` uses `nodemon.json` to watch `src/`, run `tsx src/index.ts`, and set development mode. Normal project management and authentication do not require a Gemini key.
+Set `AI_PROVIDER=openai` or `AI_PROVIDER=gemini` in `api/.env` and restart the API to switch providers. If omitted, a non-placeholder `OPENAI_API_KEY` selects OpenAI; otherwise Gemini is selected. There is no automatic fallback after provider errors.
+
+| Variable         | Required/default   | Purpose                                                                           |
+| ---------------- | ------------------ | --------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY` | Optional           | Enables OpenAI calls; missing, blank, or example keys return `503` when selected. |
+| `AI_PROVIDER`    | Optional           | `openai` or `gemini`; explicit selection overrides key-based selection.           |
+| `OPENAI_MODEL`   | `gpt-4.1-mini`     | OpenAI model ID; configurable according to account access.                        |
+| `GEMINI_MODEL`   | `gemini-2.5-flash` | Gemini model ID.                                                                  |
+
+Provider calls have a 60-second timeout. Failed, malformed, or empty provider responses return a sanitized `502`; raw provider errors are not logged. OpenAI requests set `store: false`. Missing credentials affect AI operations only. Model defaults describe source configuration, not guaranteed provider availability.
+
+`npm run dev` uses `nodemon.json` to watch `src/`, run `tsx src/index.ts`, and set development mode. Normal project management and authentication do not require an AI provider key.
 
 ## Current HTTP contract
 
@@ -148,7 +159,7 @@ Project start/due dates and status/priority editing, task dates/tags/estimates/p
 
 ## AI and realtime boundaries
 
-[AIService](src/services/ai.service.ts) constructs a Gemini client on demand and currently requests `gemini-2.5-flash`. This is the model configured in source, not a statement about provider availability. Plan generation requests phases/tasks as Markdown; risk analysis serializes submitted context into the prompt. Neither operation persists an insight or creates tasks.
+[AIService](src/services/ai.service.ts) owns shared prompts and delegates text generation through the `AIProvider` interface to [OpenAIService](src/services/openai.service.ts) or [GeminiService](src/services/gemini.service.ts). OpenAI uses native fetch with the [Responses API](https://developers.openai.com/api/docs/guides/text); Gemini uses `@google/genai`. Both initialize on demand. Plan generation requests phases/tasks as Markdown; risk analysis serializes submitted context into the prompt. Neither operation persists an insight or creates tasks.
 
 Both endpoints require a session but do not perform project-specific authorization or load authoritative project context from the database. Before extending project-aware AI, obtain authorized server-side context, validate input, limit data sent to the provider, and retain user review before applying generated changes. The frontend assistant is currently a mock and calls neither endpoint. Chat, summaries, prioritization, next actions, and accepting generated plans are not implemented.
 
@@ -177,11 +188,11 @@ Run from `api/`:
 | `npx prisma generate`                     | Regenerate the client after schema/dependency changes.             |
 | `npx prisma migrate deploy`               | Apply committed migrations to the configured database.             |
 
-After code changes, run `npm run format`, `npx tsc --noEmit`, and relevant tests. There is no API lint script. Tests inject an in-memory auth repository, mock Prisma delegates, and use an ephemeral local HTTP server. They supply isolated environment values and do not require a live database or Gemini key. Coverage includes cookies, registration conflicts, validation, task access, and contributors; this is not a real-database, Socket.IO, or live-AI integration suite.
+After code changes, run `npm run format`, `npx tsc --noEmit`, and relevant tests. There is no API lint script. Tests inject an in-memory auth repository, mock Prisma delegates, and use an ephemeral local HTTP server. They supply isolated environment values and do not require a live database or AI provider key. Coverage includes cookies, registration conflicts, validation, task access, and contributors; this is not a real-database, Socket.IO, or live-AI integration suite.
 
 The app uses Helmet, credentialed CORS for `CLIENT_URL`, and a 1 MB JSON limit. `/api` has a 1000-request/15-minute limiter; login/register additionally have a 30-request/15-minute limiter with successful requests skipped. Production deployment requires HTTPS for cookies, generated Prisma client, applied migrations, built output, and required environment. There is no checked-in deployment automation, and proxy trust is not configured in Express.
 
-If startup exits, check required environment values. If Prisma types are missing/stale, regenerate the client. For query failures, check database availability and migration state; a successful `/health` alone does not establish database connectivity. An AI `503` with working normal routes is expected when Gemini is not configured.
+If startup exits, check required environment values. If Prisma types are missing/stale, regenerate the client. For query failures, check database availability and migration state; a successful `/health` alone does not establish database connectivity. An AI `503` with working normal routes is expected when the selected AI provider is not configured.
 
 ## Keeping this context current
 

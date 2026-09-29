@@ -5,7 +5,11 @@ dotenv.config();
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   JWT_SECRET: z.string().min(1),
-  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().trim().optional(),
+  OPENAI_API_KEY: z.string().trim().optional(),
+  AI_PROVIDER: z.enum(["openai", "gemini"]).optional(),
+  OPENAI_MODEL: z.string().trim().min(1).default("gpt-4.1-mini"),
+  GEMINI_MODEL: z.string().trim().min(1).default("gemini-2.5-flash"),
   CLIENT_URL: z.string().url(),
   PORT: z.coerce.number().default(5000),
   NODE_ENV: z

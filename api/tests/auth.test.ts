@@ -12,6 +12,8 @@ process.env.DATABASE_URL = "postgresql://test:test@127.0.0.1:1/not_used";
 process.env.JWT_SECRET = "isolated-auth-regression-test-secret";
 process.env.CLIENT_URL = "http://localhost:3000";
 process.env.GEMINI_API_KEY = "";
+process.env.OPENAI_API_KEY = "";
+delete process.env.AI_PROVIDER;
 
 const { createApp } = await import("../src/app.js");
 const { prisma } = await import("../src/config/database.js");
