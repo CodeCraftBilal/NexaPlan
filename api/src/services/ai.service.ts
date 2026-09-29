@@ -3,8 +3,14 @@ import { env } from "../config/env.js";
 import { HttpError } from "../utils/httpError.js";
 
 function getAI() {
-  if (!env.GEMINI_API_KEY || env.GEMINI_API_KEY === "your-gemini-api-key-here") {
-    throw new HttpError(503, "AI features are not configured yet. Add a Gemini API key to enable them.");
+  if (
+    !env.GEMINI_API_KEY ||
+    env.GEMINI_API_KEY === "your-gemini-api-key-here"
+  ) {
+    throw new HttpError(
+      503,
+      "AI features are not configured yet. Add a Gemini API key to enable them.",
+    );
   }
   return new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 }
@@ -21,7 +27,7 @@ export class AIService {
 
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: "gemini-2.5-flash",
         contents: prompt,
       });
 
@@ -43,7 +49,7 @@ export class AIService {
 
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: "gemini-2.5-flash",
         contents: prompt,
       });
 

@@ -3,7 +3,11 @@ import { WorkspaceRole } from "@prisma/client";
 import { HttpError } from "../utils/httpError.js";
 
 export class WorkspaceService {
-  static async createWorkspace(name: string, description: string | null, ownerId: string) {
+  static async createWorkspace(
+    name: string,
+    description: string | null,
+    ownerId: string,
+  ) {
     return prisma.workspace.create({
       data: {
         name,
@@ -54,8 +58,9 @@ export class WorkspaceService {
     });
 
     if (!workspace) throw new HttpError(404, "Workspace not found");
-    const isMember = workspace.members.some(m => m.userId === userId);
-    if (!isMember) throw new HttpError(403, "You do not have access to this workspace");
+    const isMember = workspace.members.some((m) => m.userId === userId);
+    if (!isMember)
+      throw new HttpError(403, "You do not have access to this workspace");
 
     return workspace;
   }

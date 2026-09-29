@@ -11,7 +11,11 @@ router.use(authenticate);
 router.post("/", async (req: AuthRequest, res, next) => {
   try {
     const { name, description } = workspaceSchema.parse(req.body);
-    const workspace = await WorkspaceService.createWorkspace(name, description ?? null, req.user!.id);
+    const workspace = await WorkspaceService.createWorkspace(
+      name,
+      description ?? null,
+      req.user!.id,
+    );
     sendResponse(res, 201, true, "Workspace created", workspace);
   } catch (error) {
     next(error);
@@ -29,7 +33,10 @@ router.get("/", async (req: AuthRequest, res, next) => {
 
 router.get("/:id", async (req: AuthRequest, res, next) => {
   try {
-    const workspace = await WorkspaceService.getWorkspaceById(req.params.id as string, req.user!.id);
+    const workspace = await WorkspaceService.getWorkspaceById(
+      req.params.id as string,
+      req.user!.id,
+    );
     sendResponse(res, 200, true, "Workspace retrieved", workspace);
   } catch (error) {
     next(error);

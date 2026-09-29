@@ -14,22 +14,38 @@ const { createApp } = await import("../src/app.js");
 const { prisma } = await import("../src/config/database.js");
 
 test("production login and logout use matching Secure, HttpOnly, SameSite and path settings", async () => {
-  const user = { id: "production-test", name: "Test", email: "test@example.com", password: await bcrypt.hash("secret123", 4), role: "USER" as const, avatar: null };
+  const user = {
+    id: "production-test",
+    name: "Test",
+    email: "test@example.com",
+    password: await bcrypt.hash("secret123", 4),
+    role: "USER" as const,
+    avatar: null,
+  };
   const repository: AuthRepository = {
-    async findByEmail() { return user; },
-    async findById() { return user; },
-    async create() { return user; },
+    async findByEmail() {
+      return user;
+    },
+    async findById() {
+      return user;
+    },
+    async create() {
+      return user;
+    },
   };
   const server = createServer(createApp({ authRepository: repository }));
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   try {
     const login = await fetch(`${baseUrl}/api/auth/login`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: user.email, password: "secret123" }),
     });
     assert.equal(login.status, 200);
-    const logout = await fetch(`${baseUrl}/api/auth/logout`, { method: "POST" });
+    const logout = await fetch(`${baseUrl}/api/auth/logout`, {
+      method: "POST",
+    });
     assert.equal(logout.status, 200);
     for (const response of [login, logout]) {
       const cookie = response.headers.get("set-cookie")!;
@@ -39,7 +55,9 @@ test("production login and logout use matching Secure, HttpOnly, SameSite and pa
       assert.match(cookie, /; Path=\//);
     }
   } finally {
-    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    await new Promise<void>((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
     await prisma.$disconnect();
   }
 });

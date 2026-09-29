@@ -13,7 +13,7 @@ router.post("/project-plan", async (req: AuthRequest, res, next) => {
     if (!description) {
       return sendResponse(res, 400, false, "Description is required");
     }
-    
+
     const plan = await AIService.generateProjectPlan(description);
     sendResponse(res, 200, true, "Project plan generated", { plan });
   } catch (error) {

@@ -27,7 +27,10 @@ router.post("/", async (req: AuthRequest, res, next) => {
 
 router.get("/workspace/:workspaceId", async (req: AuthRequest, res, next) => {
   try {
-    const projects = await ProjectService.getWorkspaceProjects(req.params.workspaceId as string, req.user!.id);
+    const projects = await ProjectService.getWorkspaceProjects(
+      req.params.workspaceId as string,
+      req.user!.id,
+    );
     sendResponse(res, 200, true, "Projects retrieved", projects);
   } catch (error) {
     next(error);
@@ -37,7 +40,11 @@ router.get("/workspace/:workspaceId", async (req: AuthRequest, res, next) => {
 router.post("/:id/contributors", async (req: AuthRequest, res, next) => {
   try {
     const input = contributorSchema.parse(req.body);
-    const member = await ProjectService.addContributor(req.params.id as string, req.user!.id, input);
+    const member = await ProjectService.addContributor(
+      req.params.id as string,
+      req.user!.id,
+      input,
+    );
     sendResponse(res, 201, true, "Contributor added", member);
   } catch (error) {
     next(error);
@@ -46,7 +53,10 @@ router.post("/:id/contributors", async (req: AuthRequest, res, next) => {
 
 router.get("/:id", async (req: AuthRequest, res, next) => {
   try {
-    const project = await ProjectService.getProjectById(req.params.id as string, req.user!.id);
+    const project = await ProjectService.getProjectById(
+      req.params.id as string,
+      req.user!.id,
+    );
     sendResponse(res, 200, true, "Project retrieved", project);
   } catch (error) {
     next(error);

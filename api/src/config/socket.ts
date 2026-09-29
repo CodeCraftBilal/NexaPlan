@@ -2,7 +2,10 @@ import { Server as SocketIOServer } from "socket.io";
 import { Server as HttpServer } from "http";
 import { env } from "./env.js";
 import { verifySessionToken } from "../middleware/auth.js";
-import { requireProjectAccess, requireWorkspaceAccess } from "../services/access.service.js";
+import {
+  requireProjectAccess,
+  requireWorkspaceAccess,
+} from "../services/access.service.js";
 
 export let io: SocketIOServer;
 
@@ -17,8 +20,13 @@ export const initSocket = (server: HttpServer) => {
 
   io.use((socket, next) => {
     try {
-      const cookie = socket.handshake.headers.cookie?.split(";").map((part) => part.trim()).find((part) => part.startsWith("token="));
-      const token = cookie ? decodeURIComponent(cookie.slice(6)) : socket.handshake.auth.token;
+      const cookie = socket.handshake.headers.cookie
+        ?.split(";")
+        .map((part) => part.trim())
+        .find((part) => part.startsWith("token="));
+      const token = cookie
+        ? decodeURIComponent(cookie.slice(6))
+        : socket.handshake.auth.token;
       if (typeof token !== "string") throw new Error("Authentication required");
       socket.data.user = verifySessionToken(token);
       next();
@@ -29,7 +37,7 @@ export const initSocket = (server: HttpServer) => {
 
   io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
-    
+
     socket.on("join_workspace", async (workspaceId: string) => {
       try {
         if (typeof workspaceId !== "string" || !workspaceId) return;
@@ -39,7 +47,7 @@ export const initSocket = (server: HttpServer) => {
         socket.emit("access_error", { message: "Workspace access denied" });
       }
     });
-    
+
     socket.on("join_project", async (projectId: string) => {
       try {
         if (typeof projectId !== "string" || !projectId) return;

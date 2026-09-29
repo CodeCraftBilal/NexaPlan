@@ -2,7 +2,12 @@ import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { HttpError } from "../utils/httpError.js";
 
-export const errorHandler = (err: unknown, _req: Request, res: Response, next: NextFunction) => {
+export const errorHandler = (
+  err: unknown,
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   if (res.headersSent) {
     next(err);
     return;
@@ -16,7 +21,9 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, next: N
     return;
   }
   if (err instanceof SyntaxError && "status" in err && err.status === 400) {
-    res.status(400).json({ success: false, message: "Invalid JSON request body" });
+    res
+      .status(400)
+      .json({ success: false, message: "Invalid JSON request body" });
     return;
   }
   if (err instanceof HttpError) {
@@ -24,5 +31,10 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, next: N
     return;
   }
   console.error("Request failed:", err);
-  res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
+  res
+    .status(500)
+    .json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+    });
 };
