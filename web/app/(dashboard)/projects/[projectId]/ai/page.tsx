@@ -157,10 +157,10 @@ function ProjectAssistant({ projectId }: { projectId: string }) {
               key={message.id}
               className="rounded-xl border border-border p-4"
             >
-              <p className="mb-3 text-sm font-semibold text-primary">
+              <p className="mb-3 text-lg font-semibold text-primary">
                 {message.role === "user" ? "You" : "Project assistant"}
               </p>
-              <div className="space-y-3 text-sm leading-7 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_pre]:overflow-x-auto [&_a]:underline">
+              <div className="space-y-3 text-lg leading-7 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_pre]:overflow-x-auto [&_a]:underline">
                 <ReactMarkdown components={{ img: () => null }}>
                   {message.content}
                 </ReactMarkdown>
@@ -179,11 +179,11 @@ function ProjectAssistant({ projectId }: { projectId: string }) {
                     key={id}
                     className="mt-4 rounded-lg border border-border p-4"
                   >
-                    <p className="font-medium">{task.title}</p>
-                    <p className="mt-1 whitespace-pre-wrap text-md text-[#93998d]">
+                    <p className="font-medium text-lg">{task.title}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-lg text-[#93998d]">
                       {task.description}
                     </p>
-                    <p className="my-2 text-sm text-[#93998d]">
+                    <p className="my-2 text-lg text-[#93998d]">
                       Suggested priority: {task.priority}
                     </p>
                     {resolved[id] ? (
