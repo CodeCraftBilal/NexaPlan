@@ -52,7 +52,7 @@ The [product requirements](project_requirements.md) describe the broader intende
 | Web                 | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4 |
 | Client data and UI  | Axios, Zustand, Lucide, `@hello-pangea/dnd`                 |
 | API                 | Express 5, TypeScript, Zod, JWT, bcryptjs                   |
-| Database            | PostgreSQL with Prisma 5                                    |
+| Database            | PostgreSQL with Prisma 7 and the node-postgres adapter      |
 | AI                  | OpenAI Responses API and Google Gemini via `@google/genai`  |
 | Realtime foundation | Socket.IO                                                   |
 | Quality checks      | TypeScript, Prettier, web ESLint, Node's test runner        |
@@ -71,7 +71,7 @@ The browser sends API requests to the same origin as the website. Next.js forwar
 
 ### Prerequisites
 
-- Node.js and npm compatible with the packages; Next.js requires Node >=20.9.0. The repository does not pin a Node version.
+- Node.js 22.12+ on the 22.x line (or another version accepted by `api/package.json`: `^20.19 || ^22.12 || >=24.0`) and npm. These backend requirements also satisfy Next.js. No exact Node patch version is pinned.
 - A running PostgreSQL instance and a database connection you can use locally.
 - An OpenAI or Gemini API key only if you want to call the AI endpoints.
 
@@ -93,7 +93,7 @@ For AI, set `OPENAI_API_KEY` or `GEMINI_API_KEY`. Optionally set `AI_PROVIDER=op
 Then, from `api/`:
 
 ```powershell
-npx prisma generate
+npm run db:generate
 npx prisma migrate deploy
 npm run dev
 ```
@@ -147,6 +147,8 @@ npm test
 
 The web package also provides `npm run lint`. Both packages provide `npm run build` and `npm start` for building and serving production output. Production needs configured environment variables, database migrations, and HTTPS for secure cookies; deployment automation is not included.
 
-Existing tests use mocked persistence/HTTP dependencies and do not require a running PostgreSQL instance or AI provider key. They cover important session, navigation, validation, and access-control behavior, but are not a complete browser or live-database integration suite.
+Run `npm run db:generate` in `api/` before type checks or tests after a fresh install. The API build also regenerates its Prisma client before compiling. Prisma CLI configuration lives in `api/prisma.config.ts`; generation needs `DATABASE_URL` to be set but does not connect to PostgreSQL.
+
+The default tests use mocked persistence/HTTP dependencies and do not require PostgreSQL or AI provider keys. The API also provides `npm run test:integration` for a dedicated local PostgreSQL test database; see the [API verification instructions](api/README.md#commands-tests-and-operational-notes). These checks are not a complete browser or live-AI suite.
 
 Before making changes, read [AGENTS.md](AGENTS.md), the [web development guide](web/README.md), and the [API development guide](api/README.md). Keep code modular, reuse existing components/services, and enforce permissions on the backend. Include documentation updates with major changes: this README explains the product to users and developers; package READMEs provide detailed context for implementation and future AI sessions.

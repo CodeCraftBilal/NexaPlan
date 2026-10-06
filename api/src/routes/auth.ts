@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import type { User } from "@prisma/client";
+import type { User } from "../generated/prisma/client.js";
 import { registerSchema, loginSchema } from "../utils/validation.js";
 import { env } from "../config/env.js";
 import { prisma } from "../config/database.js";

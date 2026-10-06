@@ -10,7 +10,7 @@ There are two independent npm packages with separate lockfiles and no root npm r
 
 ## Stack and module layout
 
-Express 5, TypeScript with strict NodeNext/ESM configuration, Prisma 5 with PostgreSQL, Zod 4, bcryptjs, JWT, Socket.IO 4, and `@google/genai`. See [package.json](package.json) and `package-lock.json` for exact dependency resolution. Local relative imports use `.js` extensions even in `.ts` source; preserve this for compiled ESM.
+Express 5, TypeScript with strict NodeNext/ESM configuration, Prisma 7 with PostgreSQL through `@prisma/adapter-pg`, Zod 4, bcryptjs, JWT, Socket.IO 4, dotenv 18, and `@google/genai`. See [package.json](package.json) and `package-lock.json` for exact dependency resolution. Local relative imports use `.js` extensions even in `.ts` source; preserve this for compiled ESM. Prisma packages are pinned to the same version. bcryptjs supplies its own TypeScript declarations.
 
 | Path                                                                                                   | Responsibility                                                                                  |
 | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
@@ -32,9 +32,11 @@ Express 5, TypeScript with strict NodeNext/ESM configuration, Prisma 5 with Post
 
 Keep route parsing/response handling, business rules, access checks, and persistence modular. Auth currently uses an injectable `AuthRepository` inside `createAuthRouter()`; `createApp({ authRepository })` lets tests avoid real user persistence.
 
+[prisma.config.ts](prisma.config.ts) loads CLI environment variables and identifies the schema/migration history. The `prisma-client` generator writes ESM TypeScript to ignored `src/generated/prisma/`; `tsc` includes it in `dist/generated/prisma/`. Import the generated client/model types from its `client.js` entry and enums from `enums.js`. Do not hand-edit generated files. [database-options.ts](src/config/database-options.ts) separates schema selection from driver connection options; [database.ts](src/config/database.ts) creates the adapter and reuses the client outside production.
+
 ## Local setup
 
-Install Node.js/npm compatible with both packages (Next.js in `web/` requires Node >=20.9.0) and run PostgreSQL. No Node version, PostgreSQL version, container setup, or deployment provider is pinned in the repository.
+Install Node.js/npm and run PostgreSQL. The backend requires Node `^20.19 || ^22.12 || >=24.0`; Node 22.12+ on the 22.x line also satisfies the frontend. No exact Node patch, PostgreSQL version, or deployment provider is pinned.
 
 From the repository root:
 
@@ -47,12 +49,18 @@ Copy-Item .env.example .env
 Copy the example only on first setup; preserve any existing `.env`. Edit the local values, ensure the target database is available, then run from `api/`:
 
 ```powershell
-npx prisma generate
+npm run db:generate
 npx prisma migrate deploy
 npm run dev
 ```
 
 `migrate deploy` applies existing checked-in migrations. For an intentional schema change on a development database, use `npx prisma migrate dev --name <descriptive_name>`, review and commit the generated migration, and regenerate the client. Do not use `db push` as a replacement for versioned migrations or reset a populated database to resolve drift.
+
+Run CLI commands from `api/` after installing dependencies so they use the pinned Prisma 7 executable. Prisma 7 does not generate the client automatically after migrations: run `npm run db:generate` explicitly. The build runs generation before compilation, but development, type checks, and tests require generation first after a fresh install. CLI generation/validation needs `DATABASE_URL` set and does not connect to it; an unreachable test URL is sufficient for build-only CI. Migrations and application queries require a real database. CLI configuration is separate from application JWT/client-origin validation.
+
+The adapter uses a pool of at most 10 connections, a 5-second connection/acquisition timeout, and a 10-second idle timeout. `DATABASE_URL` must use `postgresql://` or `postgres://`; `?schema=...` selects the Prisma schema (default `public`). Driver-supported URL options remain intact. Old Prisma-specific pool URL parameters do not configure this pool; configure [database-options.ts](src/config/database-options.ts) when deployment capacity requires different values. TLS follows node-postgres certificate verification; configure trusted CAs (for example `NODE_EXTRA_CA_CERTS`) instead of disabling verification. `$disconnect()` releases the adapter's pool.
+
+Dotenv is loaded programmatically with quiet output and preserves variables supplied by the process. Existing `.env` files remain valid; dotenv 18 no longer supports `.env.vault` or legacy preload configuration. No vault or preload workflow is used here.
 
 Start `web/` separately. Visit `http://localhost:5000/health` for a process health response, or `http://localhost:5000/api` for the API root. These routes do not query PostgreSQL or AI providers and are not dependency-readiness checks. There is no seed script or default account; register through the frontend.
 
@@ -75,7 +83,7 @@ Set `AI_PROVIDER=openai`, `AI_PROVIDER=gemini`, or `AI_PROVIDER=rapid` in `api/.
 | ---------------- | ------------------ | --------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY` | Optional           | Enables OpenAI calls; missing, blank, or example keys return `503` when selected. |
 | `RAPID_API_KEY`  | Optional           | Enables Rapid API calls (e.g., chatgpt-42); requires `AI_PROVIDER=rapid`.         |
-| `AI_PROVIDER`    | Optional           | `openai`, `gemini`, or `rapid`; explicit selection overrides key-based selection.           |
+| `AI_PROVIDER`    | Optional           | `openai`, `gemini`, or `rapid`; explicit selection overrides key-based selection. |
 | `OPENAI_MODEL`   | `gpt-4.1-mini`     | OpenAI model ID; configurable according to account access.                        |
 | `GEMINI_MODEL`   | `gemini-2.5-flash` | Gemini model ID.                                                                  |
 
@@ -186,16 +194,34 @@ Run from `api/`:
 | Command                                   | Purpose                                                            |
 | ----------------------------------------- | ------------------------------------------------------------------ |
 | `npm run dev`                             | Nodemon + tsx development server.                                  |
-| `npm run build`                           | Compile `src/` to `dist/` with TypeScript.                         |
+| `npm run build`                           | Generate Prisma Client, then compile `src/` to `dist/`.            |
 | `npm start`                               | Run `dist/index.js`; build first.                                  |
 | `npx tsc --noEmit` / `npm run type-check` | Check source types; `tests/` is outside the compiler include list. |
 | `npm test`                                | Run `tests/*.test.ts` through Node's test runner and tsx.          |
 | `npm run format`                          | Format the package with Prettier.                                  |
 | `npm run format:check`                    | Check formatting without edits.                                    |
-| `npx prisma generate`                     | Regenerate the client after schema/dependency changes.             |
+| `npm run db:generate`                     | Regenerate the client after schema/dependency changes.             |
+| `npm run test:integration`                | Run persistence checks against an explicit local test database.    |
 | `npx prisma migrate deploy`               | Apply committed migrations to the configured database.             |
 
-After code changes, run `npm run format`, `npx tsc --noEmit`, and relevant tests. There is no API lint script. Tests inject an in-memory auth repository, mock Prisma delegates, and use an ephemeral local HTTP server. They supply isolated environment values and do not require a live database or AI provider key. Coverage includes cookies, registration conflicts, validation, task access, and contributors; this is not a real-database, Socket.IO, or live-AI integration suite.
+After code changes, run `npm run format`, `npx tsc --noEmit`, and relevant tests; run the build for dependency/runtime changes. There is no API lint script. Default tests inject an in-memory auth repository, mock Prisma delegates/provider HTTP calls, and use ephemeral HTTP servers. They explicitly isolate AI settings from local `.env` values. Coverage includes cookies, registration conflicts, validation, task access, contributors, database URL options, dotenv precedence, and the Gemini SDK boundary. They do not require a live database or AI key.
+
+The separate [PostgreSQL integration test](tests/integration/postgres.test.ts) requires `TEST_DATABASE_URL` pointing to a disposable **local** database whose name ends in `_test`. It creates a random schema, applies existing migrations, checks for schema drift, exercises auth/nested writes/contributor transactions/task queries, and verifies Socket.IO authentication, room access, and task events through the polling transport. It drops only its own schema on completion. The test role needs schema creation and migration permissions. It never falls back to `DATABASE_URL` from `.env`.
+
+Example in PowerShell, using a separate PostgreSQL container (test-only credentials):
+
+```powershell
+docker run --detach --rm --name projectai-prisma-test --publish 127.0.0.1:55437:5432 --env POSTGRES_USER=upgrade_test --env POSTGRES_PASSWORD=upgrade_test_only --env POSTGRES_DB=projectai_upgrade_test postgres:17
+# Wait for pg_isready to succeed before running the test.
+docker exec projectai-prisma-test pg_isready -U upgrade_test -d projectai_upgrade_test
+$env:TEST_DATABASE_URL = 'postgresql://upgrade_test:upgrade_test_only@127.0.0.1:55437/projectai_upgrade_test'
+npm run db:generate
+npm run test:integration
+docker stop projectai-prisma-test
+Remove-Item Env:TEST_DATABASE_URL
+```
+
+Use `npm.cmd`/`npx.cmd` if PowerShell blocks the script launchers. Integration tests do not call live AI providers or constitute a browser end-to-end suite.
 
 The app uses Helmet, credentialed CORS for `CLIENT_URL`, and a 1 MB JSON limit. `/api` has a 1000-request/15-minute limiter; login/register additionally have a 30-request/15-minute limiter with successful requests skipped. Production deployment requires HTTPS for cookies, generated Prisma client, applied migrations, built output, and required environment. There is no checked-in deployment automation, and proxy trust is not configured in Express.
 

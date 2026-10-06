@@ -1,5 +1,5 @@
 import { prisma } from "../config/database.js";
-import { TaskStatus, TaskPriority } from "@prisma/client";
+import { TaskStatus, TaskPriority } from "../generated/prisma/enums.js";
 import { requireProjectAccess } from "./access.service.js";
 import { HttpError } from "../utils/httpError.js";
 

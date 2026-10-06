@@ -1,5 +1,5 @@
 import { prisma } from "../config/database.js";
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole } from "../generated/prisma/enums.js";
 import { HttpError } from "../utils/httpError.js";
 
 export class WorkspaceService {

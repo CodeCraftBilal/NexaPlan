@@ -26,7 +26,7 @@ Versions describe the checked-in manifests, not an upgrade recommendation. See [
 
 ## Local setup
 
-Use Node.js and npm; the installed Next.js package requires Node >=20.9.0. The repository does not pin a Node version. Start PostgreSQL and configure/start `api/` using its README first.
+Use Node.js and npm. For the full application, use Node 22.12+ on the 22.x line or another version accepted by `api/package.json` (`^20.19 || ^22.12 || >=24.0`); this also satisfies Next.js's Node >=20.9.0 requirement. No exact patch version is pinned. Start PostgreSQL and configure/start `api/` using its README first, including `npm run db:generate` after installing backend dependencies.
 
 From the repository root:
 

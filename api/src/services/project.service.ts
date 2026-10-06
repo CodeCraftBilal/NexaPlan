@@ -1,5 +1,5 @@
 import { prisma } from "../config/database.js";
-import { ProjectRole } from "@prisma/client";
+import { ProjectRole } from "../generated/prisma/enums.js";
 import {
   requireProjectAccess,
   requireWorkspaceAccess,

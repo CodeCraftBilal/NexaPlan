@@ -6,40 +6,45 @@
   "author": "",
   "type": "module",
   "main": "dist/index.js",
+  "engines": {
+    "node": "^20.19 || ^22.12 || >=24.0"
+  },
   "scripts": {
     "dev": "nodemon",
-    "build": "tsc",
+    "build": "npm run db:generate && tsc",
+    "db:generate": "prisma generate",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
+    "test:integration": "node --import tsx --test tests/integration/*.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@google/genai": "^2.22.0",
-    "@prisma/client": "^5.22.0",
+    "@google/genai": "2.27.0",
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
+    "dotenv": "18.0.5",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
-    "prisma": "^5.22.0",
-    "socket.io": "^4.8.3",
+    "prisma": "7.10.0",
+    "socket.io": "4.8.4",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^26.1.1",
+    "@types/node": "26.6.4",
     "prettier": "^3.9.9",
     "nodemon": "^3.1.14",
-    "tsx": "^4.19.4",
+    "tsx": "4.23.15",
     "typescript": "^7.0.2"
   }
 }

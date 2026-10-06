@@ -6,7 +6,8 @@ process.env.JWT_SECRET = "isolated-ai-test-secret";
 process.env.CLIENT_URL = "http://localhost:3000";
 process.env.OPENAI_API_KEY = "";
 process.env.GEMINI_API_KEY = "";
-delete process.env.AI_PROVIDER;
+process.env.RAPID_API_KEY = "";
+process.env.AI_PROVIDER = "openai";
 const { env } = await import("../src/config/env.js");
 const { AIService } = await import("../src/services/ai.service.js");
 const { OpenAIService } = await import("../src/services/openai.service.js");
@@ -143,6 +144,53 @@ test("assistant validates AI task proposals before returning them", async () => 
   ]) {
     mock.method(GeminiService, "generateText", async () => raw);
     await assert.rejects(AIService.chat({}, "Plan", []), { statusCode: 502 });
+    mock.restoreAll();
+  }
+});
+
+test("Gemini SDK sends the configured model and reads generated text", async () => {
+  env.GEMINI_API_KEY = "test-gemini-key";
+  env.GEMINI_MODEL = "test-gemini-model";
+  mock.method(globalThis, "fetch", async (input, options) => {
+    const request = new Request(input, options);
+    assert.match(request.url, /models\/test-gemini-model:generateContent/);
+    assert.equal(request.headers.get("x-goog-api-key"), "test-gemini-key");
+    assert.deepEqual(await request.json(), {
+      contents: [{ role: "user", parts: [{ text: "project prompt" }] }],
+    });
+    return Response.json({
+      candidates: [
+        { content: { role: "model", parts: [{ text: "Project response" }] } },
+      ],
+    });
+  });
+  assert.equal(
+    await GeminiService.generateText("project prompt"),
+    "Project response",
+  );
+});
+
+test("Gemini SDK errors and empty responses retain the public error contract", async () => {
+  env.GEMINI_API_KEY = "test-gemini-key";
+  for (const response of [
+    Response.json({ candidates: [] }),
+    Response.json(
+      {
+        error: {
+          code: 400,
+          message: "private provider detail",
+          status: "INVALID_ARGUMENT",
+        },
+      },
+      { status: 400 },
+    ),
+  ]) {
+    mock.method(globalThis, "fetch", async () => response);
+    mock.method(console, "error", () => {});
+    await assert.rejects(GeminiService.generateText("prompt"), {
+      statusCode: 502,
+      message: "Gemini could not generate a response. Please try again.",
+    });
     mock.restoreAll();
   }
 });

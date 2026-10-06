@@ -10,6 +10,9 @@ process.env.DATABASE_URL = "postgresql://test:test@127.0.0.1:1/not_used";
 process.env.JWT_SECRET = "isolated-production-cookie-test-secret";
 process.env.CLIENT_URL = "https://example.com";
 process.env.GEMINI_API_KEY = "";
+process.env.OPENAI_API_KEY = "";
+process.env.RAPID_API_KEY = "";
+process.env.AI_PROVIDER = "openai";
 const { createApp } = await import("../src/app.js");
 const { prisma } = await import("../src/config/database.js");
 
